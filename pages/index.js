@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const FONTS = [
   {label:'DM Sans', css:'DM Sans'},
@@ -14,7 +14,21 @@ const FONTS = [
   {label:'Space Grotesk', css:'Space Grotesk'}
 ];
 
-const GENRES = ['Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave','Afrobeats','Metalcore','Neo-Soul'];
+// === NEW: tabs + per-category prompt options
+const TABS = ['genre', 'mood', 'style', 'texture'];
+
+const PROMPTS = {
+  genre: ['Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave','Afrobeats','Metalcore','Neo-Soul'],
+  mood: ['Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive','Mellow','Epic / Cinematic'],
+  style: ['Photographic','Illustration','Collage','Vaporwave','Minimal','Oil Paint','3D Render','Graffiti'],
+  texture: ['Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W']
+};
+
+function assembledPrompt(text, picksByCat){
+  const flat = TABS.flatMap(cat => picksByCat[cat]);
+  const on = flat.join(', ');
+  return [text, on].filter(Boolean).join(' — ');
+}
 
 // simple client-side placeholder generator to avoid CORS during MVP
 function placeholderDataUrl(seed, label='Art'){
@@ -22,13 +36,10 @@ function placeholderDataUrl(seed, label='Art'){
   const c = document.createElement('canvas');
   c.width = size; c.height = size;
   const ctx = c.getContext('2d');
-  // gradient based on seed
-  const rnd = (n)=> Math.abs(Math.sin(seed*n))*255|0;
   const g = ctx.createLinearGradient(0,0,size,size);
   g.addColorStop(0, `hsl(${(seed*73)%360} 70% 90%)`);
   g.addColorStop(1, `hsl(${(seed*137)%360} 70% 70%)`);
   ctx.fillStyle = g; ctx.fillRect(0,0,size,size);
-  // center label
   ctx.fillStyle = 'rgba(0,0,0,.35)';
   ctx.fillRect(0, size/2-52, size, 104);
   ctx.fillStyle = 'white';
@@ -37,11 +48,6 @@ function placeholderDataUrl(seed, label='Art'){
   ctx.textBaseline = 'middle';
   ctx.fillText(`${label} ${seed}`, size/2, size/2);
   return c.toDataURL('image/png');
-}
-
-function assembledPrompt(text, picks){
-  const on = picks.join(', ');
-  return [text, on].filter(Boolean).join(' — ');
 }
 
 // text position within safe area (no dragging)
@@ -60,15 +66,27 @@ function computeXY({align, vpos, W, H, inset, textW, lineH, isTitle}){
 export default function Home(){
   const [mode,setMode] = useState('gen'); // 'gen' | 'edit'
   const [prompt,setPrompt] = useState('');
-  const [picks,setPicks] = useState([]);
+  const [activeTab, setActiveTab] = useState('genre'); // NEW: tabs
+  const [picks,setPicks] = useState({ genre:[], mood:[], style:[], texture:[] }); // NEW: per-category
   const [images,setImages] = useState([]); // dataURLs
   const [selected,setSelected] = useState(null);
 
-  const toggle = (g)=> setPicks(p=> p.includes(g) ? p.filter(x=>x!==g) : [...p,g]);
+  // toggle pill in the currently active tab
+  const toggle = (value) => {
+    setPicks(p => {
+      const cur = p[activeTab];
+      const next = cur.includes(value) ? cur.filter(x => x!==value) : [...cur, value];
+      return { ...p, [activeTab]: next };
+    });
+  };
 
   async function onGenerate(){
-    // optionally call /api/generate for logging
-    fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt, pills:picks }) }).catch(()=>{});
+    // optional: log to API (not required for MVP)
+    fetch('/api/generate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt, pills: picks })
+    }).catch(()=>{});
     // create 4 placeholders
     const arr = [1,2,3,4].map(i => placeholderDataUrl(i, 'Art'));
     setImages(arr);
@@ -95,18 +113,37 @@ export default function Home(){
               </div>
             </section>
 
-            <div className="row" style={{marginTop:20, gap:32}}>
+            {/* Tabs */}
+            <div className="row" style={{marginTop:20, gap:16, alignItems:'flex-end'}}>
               <div style={{font:'700 16px/24px "IBM Plex Mono", ui-monospace'}}>Add Prompts:</div>
-              <div className="row" style={{gap:8}}>
-                {['💿 Genre','🙂 Mood','🖌️ Style','🌫️ Texture'].map((t,i)=>(
-                  <div className={"pill"+(i===0?' pillOn':'')} key={t}>{t}</div>
+              <div className="tabs">
+                {[
+                  {key:'genre',   label:'💿 Genre'},
+                  {key:'mood',    label:'🙂 Mood'},
+                  {key:'style',   label:'🖌️ Style'},
+                  {key:'texture', label:'🌫️ Texture'}
+                ].map(t => (
+                  <button
+                    key={t.key}
+                    className={'tab' + (activeTab===t.key ? ' tabOn' : '')}
+                    onClick={()=>setActiveTab(t.key)}
+                  >
+                    {t.label}
+                  </button>
                 ))}
               </div>
             </div>
 
+            {/* Pills for active tab only */}
             <div className="pills">
-              {GENRES.map(g => (
-                <div key={g} className={"pill"+(picks.includes(g)?' pillOn':'')} onClick={()=>toggle(g)}>+ {g}</div>
+              {PROMPTS[activeTab].map(v => (
+                <div
+                  key={v}
+                  className={'pill' + (picks[activeTab].includes(v) ? ' pillOn' : '')}
+                  onClick={()=>toggle(v)}
+                >
+                  + {v}
+                </div>
               ))}
             </div>
 
@@ -115,7 +152,15 @@ export default function Home(){
                 <div style={{font:'600 20px/30px Poppins', margin:'16px 0'}}>Today</div>
                 <div className="grid">
                   {images.map((src,i)=>(
-                    <img key={i} src={src} className="thumb" onClick={()=>{ setSelected({ src, prompt: assembledPrompt(prompt, picks) }); setMode('edit'); }} />
+                    <img
+                      key={i}
+                      src={src}
+                      className="thumb"
+                      onClick={()=>{
+                        setSelected({ src, prompt: assembledPrompt(prompt, picks) });
+                        setMode('edit');
+                      }}
+                    />
                   ))}
                 </div>
               </section>
@@ -131,7 +176,7 @@ export default function Home(){
   )
 }
 
-function Editor({ data, goBack }){
+function Editor({ data }){
   const W = 900, H = 900, SAFE = 0.10;
   const canvasRef = useRef(null);
   const [img, setImg] = useState(null);
@@ -155,38 +200,34 @@ function Editor({ data, goBack }){
   useEffect(()=>{
     if(!canvasRef.current || !img) return;
     const ctx = canvasRef.current.getContext('2d');
-    // draw base
     ctx.clearRect(0,0,W,H);
     ctx.drawImage(img,0,0,W,H);
-    // text
+
     const lineH = size*1.1;
     ctx.textBaseline = 'top';
     ctx.fillStyle = color;
+
+    // TITLE
     ctx.font = `${size}px "${font}"`;
-    // measure widths
     const titleW = ctx.measureText(title).width;
-    const artistW = ctx.measureText(artist).width;
     const {x:tx,y:ty,sx,sy,sw,sh} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH, isTitle:true});
-    // align
-    let textXTitle = tx, textXArtist = tx;
-    if(align==='center'){ textXTitle = sx + (sw - titleW)/2; textXArtist = sx + (sw - artistW)/2; }
-    if(align==='right'){  textXTitle = sx + (sw - titleW);  textXArtist = sx + (sw - artistW);  }
-    // draw
-    if (title){
-      ctx.fillText(title, textXTitle, ty);
-    }
+    let textXTitle = tx;
+    if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
+    if(align==='right'){  textXTitle = sx + (sw - titleW);  }
+    if (title) ctx.fillText(title, textXTitle, ty);
+
+    // ARTIST
     if (artist){
-      ctx.font = `${Math.round(size*0.6)}px "${font}"`;
-      const newLineH = Math.round(size*0.6)*1.2;
-      const ay = (vpos==='bottom') ? (ty + newLineH*1.6) : (ty + newLineH*1.2);
-      // recompute artist width after font change
+      const aSize = Math.round(size*0.6);
+      ctx.font = `${aSize}px "${font}"`;
+      const newLineH = aSize*1.2;
       const aW = ctx.measureText(artist).width;
       let ax = sx;
       if(align==='center') ax = sx + (sw - aW)/2;
       if(align==='right')  ax = sx + (sw - aW);
+      const ay = (vpos==='bottom') ? (ty + newLineH*1.6) : (ty + newLineH*1.2);
       ctx.fillText(artist, ax, ay);
     }
-
   },[img, artist, title, font, size, color, align, vpos]);
 
   function downloadPNG(){
@@ -194,28 +235,29 @@ function Editor({ data, goBack }){
     const out = document.createElement('canvas');
     out.width = 3000; out.height = 3000;
     const ctx = out.getContext('2d');
-    // draw base image scaled
+
     ctx.drawImage(img, 0,0, out.width, out.height);
-    // text at scale
+
     const scale = out.width / W;
     const bigSize = Math.round(size * scale);
     ctx.textBaseline = 'top';
     ctx.fillStyle = color;
+
+    // TITLE
     ctx.font = `${bigSize}px "${font}"`;
     const lineH = bigSize*1.1;
     const titleW = ctx.measureText(title).width;
     const {x:tx,y:ty,sx,sy,sw,sh} = computeXY({align, vpos, W:out.width, H:out.height, inset:SAFE, textW:titleW, lineH, isTitle:true});
-    // align
     let textXTitle = tx;
     if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
     if(align==='right'){  textXTitle = sx + (sw - titleW);  }
-    if (title){
-      ctx.fillText(title, textXTitle, ty);
-    }
+    if (title) ctx.fillText(title, textXTitle, ty);
+
+    // ARTIST
     if (artist){
-      const artistSize = Math.round(bigSize*0.6);
-      ctx.font = `${artistSize}px "${font}"`;
-      const newLineH = artistSize*1.2;
+      const aSize = Math.round(bigSize*0.6);
+      ctx.font = `${aSize}px "${font}"`;
+      const newLineH = aSize*1.2;
       const aW = ctx.measureText(artist).width;
       let ax = sx;
       if(align==='center') ax = sx + (sw - aW)/2;
@@ -223,6 +265,7 @@ function Editor({ data, goBack }){
       const ay = (vpos==='bottom') ? (ty + newLineH*1.6) : (ty + newLineH*1.2);
       ctx.fillText(artist, ax, ay);
     }
+
     const link = document.createElement('a');
     link.href = out.toDataURL('image/png');
     link.download = 'ditto-cover-3000.png';
