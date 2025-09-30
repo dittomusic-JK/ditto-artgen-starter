@@ -17,7 +17,7 @@ body { margin:0; font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Rob
 .btn{ border:0; cursor:pointer; border-radius:100px; padding:16px 32px; color:#fff; background:var(--ink); font:600 16px/16px "Poppins"; }
 .btnPrimary{ background:var(--purple); }
 
-.row{ display:flex; gap:16px; align-items:center; }
+.row{ display:flex; gap:32px; align-items:center; }
 
 /* Pills */
 .pills{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
