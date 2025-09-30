@@ -236,18 +236,82 @@ function Editor({ data, onClose }){
     }
   },[img, artist, title, font, size, color, align, vpos]);
 
-  function downloadPNG(){
-    // export at 3000x3000
+  async function downloadPNG(){
+  try {
+    // 1) Ensure fonts are ready so text metrics are correct
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    // 2) Offscreen canvas at 3000x3000
+    const OUT = 3000;
     const out = document.createElement('canvas');
-    out.width = 3000; out.height = 3000;
+    out.width = OUT; out.height = OUT;
     const ctx = out.getContext('2d');
 
-    ctx.drawImage(img, 0,0, out.width, out.height);
+    // 3) Draw base image scaled
+    //    (works for base64 data URLs and most hosted URLs)
+    ctx.drawImage(img, 0, 0, OUT, OUT);
 
-    const scale = out.width / W;
-    const bigSize = Math.round(size * scale);
+    // 4) Recompute text placement at full size
+    const SAFE = 0.05; // keep in sync with component SAFE
+    const align = typeof window !== 'undefined' ? (window.__align || 'center') : 'center'; // not needed if using state here—see below
+    const vpos  = typeof window !== 'undefined' ? (window.__vpos  || 'bottom') : 'bottom';
+
+    // Use local state values (replace these lines with your state if you paste this snippet verbatim)
+    const bigTitle   = title;
+    const bigArtist  = artist;
+    const bigColor   = color;
+    const bigFont    = font;
+    const bigSize    = Math.round(size * (OUT / 900)); // scale from preview(900) to 3000
+
     ctx.textBaseline = 'top';
-    ctx.fillStyle = color;
+    ctx.fillStyle = bigColor;
+
+    // TITLE
+    ctx.font = `${bigSize}px "${bigFont}"`;
+    const lineH = bigSize * 1.1;
+    const titleW = ctx.measureText(bigTitle).width;
+    const { x:tx, y:ty, sx, sy, sw } = computeXY({
+      align, vpos, W: OUT, H: OUT, inset: SAFE, textW: titleW, lineH, isTitle: true
+    });
+
+    let textXTitle = tx;
+    if (align === 'center') textXTitle = sx + (sw - titleW) / 2;
+    if (align === 'right')  textXTitle = sx + (sw - titleW);
+
+    if (bigTitle) ctx.fillText(bigTitle, textXTitle, ty);
+
+    // ARTIST
+    if (bigArtist){
+      const aSize = Math.round(bigSize * 0.6);
+      ctx.font = `${aSize}px "${bigFont}"`;
+      const aW = ctx.measureText(bigArtist).width;
+      let ax = sx;
+      if (align === 'center') ax = sx + (sw - aW)/2;
+      if (align === 'right')  ax = sx + (sw - aW);
+      const ay = (vpos === 'bottom') ? (ty + aSize*1.2*1.6) : (ty + aSize*1.2*1.2);
+      ctx.fillText(bigArtist, ax, ay);
+    }
+
+    // 5) Blob → download
+    out.toBlob((blob) => {
+      if (!blob) return alert('Export failed.');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ditto-cover-3000.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  } catch (e) {
+    console.error(e);
+    alert('Could not export. Check the console for details.');
+  }
+}
+
 
     // TITLE
     ctx.font = `${bigSize}px "${font}"`;
