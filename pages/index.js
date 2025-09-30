@@ -77,11 +77,22 @@ export default function Home(){
   };
 
   async function onGenerate(){
-    // optional log
-    fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt, pills: picks }) }).catch(()=>{});
-    const arr = [1,2,3,4].map(i => placeholderDataUrl(i, 'Art'));
-    setImages(arr);
+  try {
+    setImages([]); // clear
+    // Optional: you can show a loading message/spinner in state if you want
+    const resp = await fetch('/api/generate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt, pills: picks })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error || 'Generation failed');
+    setImages(data.images || []);
+  } catch (e) {
+    alert(e.message || 'Something went wrong generating images.');
   }
+}
+
 
   return (
     <>
