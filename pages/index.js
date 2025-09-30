@@ -183,7 +183,7 @@ export default function Home(){
 }
 
 function Editor({ data, onClose }){
-  const W = 900, H = 900, SAFE = 0.10;
+  const W = 900, H = 900, SAFE = 0.05; // 5% safe zone
   const canvasRef = useRef(null);
   const [img, setImg] = useState(null);
 
@@ -216,7 +216,7 @@ function Editor({ data, onClose }){
     // TITLE
     ctx.font = `${size}px "${font}"`;
     const titleW = ctx.measureText(title).width;
-    const {x:tx,y:ty,sx,sy,sw,sh} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH, isTitle:true});
+    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH, isTitle:true});
     let textXTitle = tx;
     if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
     if(align==='right'){  textXTitle = sx + (sw - titleW);  }
@@ -236,117 +236,72 @@ function Editor({ data, onClose }){
     }
   },[img, artist, title, font, size, color, align, vpos]);
 
+  // robust export at 3000x3000
   async function downloadPNG(){
-  try {
-    // 1) Ensure fonts are ready so text metrics are correct
-    if (document.fonts && document.fonts.ready) {
-      await document.fonts.ready;
+    try {
+      if (document.fonts?.ready) await document.fonts.ready;
+
+      const OUT = 3000;
+      const out = document.createElement('canvas');
+      out.width = OUT; out.height = OUT;
+      const ctx = out.getContext('2d');
+
+      // base image
+      ctx.drawImage(img, 0, 0, OUT, OUT);
+
+      // scale preview->export
+      const scale = OUT / W;
+      const bigSize = Math.round(size * scale);
+
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = color;
+
+      // TITLE
+      ctx.font = `${bigSize}px "${font}"`;
+      const lineH = bigSize*1.1;
+      const titleW = ctx.measureText(title).width;
+      const {x:tx,y:ty,sx,sy,sw} = computeXY({
+        align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH, isTitle:true
+      });
+      let textXTitle = tx;
+      if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
+      if(align==='right'){  textXTitle = sx + (sw - titleW);  }
+      if (title) ctx.fillText(title, textXTitle, ty);
+
+      // ARTIST
+      if (artist){
+        const aSize = Math.round(bigSize*0.6);
+        ctx.font = `${aSize}px "${font}"`;
+        const newLineH = aSize*1.2;
+        const aW = ctx.measureText(artist).width;
+        let ax = sx;
+        if(align==='center') ax = sx + (sw - aW)/2;
+        if(align==='right')  ax = sx + (sw - aW);
+        const ay = (vpos==='bottom') ? (ty + newLineH*1.6) : (ty + newLineH*1.2);
+        ctx.fillText(artist, ax, ay);
+      }
+
+      out.toBlob((blob)=>{
+        if(!blob) return alert('Export failed.');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ditto-cover-3000.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch(err){
+      console.error(err);
+      alert('Could not export. Check the console for details.');
     }
-
-    // 2) Offscreen canvas at 3000x3000
-    const OUT = 3000;
-    const out = document.createElement('canvas');
-    out.width = OUT; out.height = OUT;
-    const ctx = out.getContext('2d');
-
-    // 3) Draw base image scaled
-    //    (works for base64 data URLs and most hosted URLs)
-    ctx.drawImage(img, 0, 0, OUT, OUT);
-
-    // 4) Recompute text placement at full size
-    const SAFE = 0.05; // keep in sync with component SAFE
-    const align = typeof window !== 'undefined' ? (window.__align || 'center') : 'center'; // not needed if using state here—see below
-    const vpos  = typeof window !== 'undefined' ? (window.__vpos  || 'bottom') : 'bottom';
-
-    // Use local state values (replace these lines with your state if you paste this snippet verbatim)
-    const bigTitle   = title;
-    const bigArtist  = artist;
-    const bigColor   = color;
-    const bigFont    = font;
-    const bigSize    = Math.round(size * (OUT / 900)); // scale from preview(900) to 3000
-
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = bigColor;
-
-    // TITLE
-    ctx.font = `${bigSize}px "${bigFont}"`;
-    const lineH = bigSize * 1.1;
-    const titleW = ctx.measureText(bigTitle).width;
-    const { x:tx, y:ty, sx, sy, sw } = computeXY({
-      align, vpos, W: OUT, H: OUT, inset: SAFE, textW: titleW, lineH, isTitle: true
-    });
-
-    let textXTitle = tx;
-    if (align === 'center') textXTitle = sx + (sw - titleW) / 2;
-    if (align === 'right')  textXTitle = sx + (sw - titleW);
-
-    if (bigTitle) ctx.fillText(bigTitle, textXTitle, ty);
-
-    // ARTIST
-    if (bigArtist){
-      const aSize = Math.round(bigSize * 0.6);
-      ctx.font = `${aSize}px "${bigFont}"`;
-      const aW = ctx.measureText(bigArtist).width;
-      let ax = sx;
-      if (align === 'center') ax = sx + (sw - aW)/2;
-      if (align === 'right')  ax = sx + (sw - aW);
-      const ay = (vpos === 'bottom') ? (ty + aSize*1.2*1.6) : (ty + aSize*1.2*1.2);
-      ctx.fillText(bigArtist, ax, ay);
-    }
-
-    // 5) Blob → download
-    out.toBlob((blob) => {
-      if (!blob) return alert('Export failed.');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ditto-cover-3000.png';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }, 'image/png');
-  } catch (e) {
-    console.error(e);
-    alert('Could not export. Check the console for details.');
-  }
-}
-
-
-    // TITLE
-    ctx.font = `${bigSize}px "${font}"`;
-    const lineH = bigSize*1.1;
-    const titleW = ctx.measureText(title).width;
-    const {x:tx,y:ty,sx,sy,sw,sh} = computeXY({align, vpos, W:out.width, H:out.height, inset:SAFE, textW:titleW, lineH, isTitle:true});
-    let textXTitle = tx;
-    if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
-    if(align==='right'){  textXTitle = sx + (sw - titleW);  }
-    if (title) ctx.fillText(title, textXTitle, ty);
-
-    // ARTIST
-    if (artist){
-      const aSize = Math.round(bigSize*0.6);
-      ctx.font = `${aSize}px "${font}"`;
-      const newLineH = aSize*1.2;
-      const aW = ctx.measureText(artist).width;
-      let ax = sx;
-      if(align==='center') ax = sx + (sw - aW)/2;
-      if(align==='right')  ax = sx + (sw - aW);
-      const ay = (vpos==='bottom') ? (ty + newLineH*1.6) : (ty + newLineH*1.2);
-      ctx.fillText(artist, ax, ay);
-    }
-
-    const link = document.createElement('a');
-    link.href = out.toDataURL('image/png');
-    link.download = 'ditto-cover-3000.png';
-    link.click();
   }
 
   return (
     <section className="editor">
       {/* Close/back button anchored above top-right */}
       <button className="closeBtn" onClick={onClose} aria-label="Close editor and go back">
-        {/* simple X icon */}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 6L6 18M6 6l12 12"/>
         </svg>
@@ -357,7 +312,6 @@ function Editor({ data, onClose }){
         <div className="safe" />
       </div>
 
-      {/* Sidebar panel with white bg + stroke */}
       <aside className="rightcol panel">
         <div className="sideTitle">Text Prompt:</div>
         <div className="sideBox">{data.prompt || '—'}</div>
@@ -377,44 +331,19 @@ function Editor({ data, onClose }){
           <input type="number" min="24" max="300" step="2" className="control" value={size} onChange={e=>setSize(parseInt(e.target.value||'0',10))} />
         </div>
 
-        {/* Alignment buttons with nicer visuals */}
         <div className="row3" style={{marginTop:12}}>
           {['left','center','right'].map(a => (
             <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)} aria-label={`Align ${a}`}>
-              {a==='left' && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 6h18M3 12h12M3 18h18"/>
-                </svg>
-              )}
-              {a==='center' && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 6h18M6 12h12M3 18h18"/>
-                </svg>
-              )}
-              {a==='right' && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 6h18M9 12h12M3 18h18"/>
-                </svg>
-              )}
+              {a==='left' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>)}
+              {a==='center' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>)}
+              {a==='right' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>)}
             </button>
           ))}
           {['top','middle','bottom'].map(p => (
             <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)} aria-label={`Vertical ${p}`}>
-              {p==='top' && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 5v14M8 9l4-4 4 4"/>
-                </svg>
-              )}
-              {p==='middle' && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/>
-                </svg>
-              )}
-              {p==='bottom' && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 19V5M8 15l4 4 4-4"/>
-                </svg>
-              )}
+              {p==='top' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M8 9l4-4 4 4"/></svg>)}
+              {p==='middle' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>)}
+              {p==='bottom' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M8 15l4 4 4-4"/></svg>)}
             </button>
           ))}
         </div>
@@ -425,3 +354,4 @@ function Editor({ data, onClose }){
     </section>
   )
 }
+
