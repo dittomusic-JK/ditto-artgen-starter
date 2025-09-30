@@ -43,14 +43,14 @@ body {
 .mtXL{ margin-top:48px; }   /* used to increase gap between prompt & tabs */
 
 /* tabs & pills */
-.row{ display:flex; gap:16px; align-items:center; }
+.row{ display:flex; gap:24px; align-items:center; }
 .tabs { display:flex; gap:8px; }
 .tab {
   border:1px solid var(--border);
   background:#F3F3FF;
   color:#000;
   border-radius:8px;
-  padding:8px 16px;
+  padding:8px 24px;
   font:700 16px/24px "IBM Plex Mono", ui-monospace;
   cursor:pointer;
 }
