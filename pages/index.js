@@ -14,9 +14,7 @@ const FONTS = [
   {label:'Space Grotesk', css:'Space Grotesk'}
 ];
 
-// === NEW: tabs + per-category prompt options
 const TABS = ['genre', 'mood', 'style', 'texture'];
-
 const PROMPTS = {
   genre: ['Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave','Afrobeats','Metalcore','Neo-Soul'],
   mood: ['Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive','Mellow','Epic / Cinematic'],
@@ -30,7 +28,7 @@ function assembledPrompt(text, picksByCat){
   return [text, on].filter(Boolean).join(' — ');
 }
 
-// simple client-side placeholder generator to avoid CORS during MVP
+// placeholder thumbnails (client-side)
 function placeholderDataUrl(seed, label='Art'){
   const size = 1024;
   const c = document.createElement('canvas');
@@ -50,7 +48,6 @@ function placeholderDataUrl(seed, label='Art'){
   return c.toDataURL('image/png');
 }
 
-// text position within safe area (no dragging)
 function computeXY({align, vpos, W, H, inset, textW, lineH, isTitle}){
   const sx = W*inset, sy = H*inset, sw = W*(1-inset*2), sh = H*(1-inset*2);
   const yTop = sy + (isTitle ? lineH*0.2 : lineH*1.4);
@@ -66,12 +63,11 @@ function computeXY({align, vpos, W, H, inset, textW, lineH, isTitle}){
 export default function Home(){
   const [mode,setMode] = useState('gen'); // 'gen' | 'edit'
   const [prompt,setPrompt] = useState('');
-  const [activeTab, setActiveTab] = useState('genre'); // NEW: tabs
-  const [picks,setPicks] = useState({ genre:[], mood:[], style:[], texture:[] }); // NEW: per-category
-  const [images,setImages] = useState([]); // dataURLs
+  const [activeTab, setActiveTab] = useState('genre');
+  const [picks,setPicks] = useState({ genre:[], mood:[], style:[], texture:[] });
+  const [images,setImages] = useState([]);
   const [selected,setSelected] = useState(null);
 
-  // toggle pill in the currently active tab
   const toggle = (value) => {
     setPicks(p => {
       const cur = p[activeTab];
@@ -81,13 +77,8 @@ export default function Home(){
   };
 
   async function onGenerate(){
-    // optional: log to API (not required for MVP)
-    fetch('/api/generate', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ prompt, pills: picks })
-    }).catch(()=>{});
-    // create 4 placeholders
+    // optional log
+    fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt, pills: picks }) }).catch(()=>{});
     const arr = [1,2,3,4].map(i => placeholderDataUrl(i, 'Art'));
     setImages(arr);
   }
@@ -99,6 +90,7 @@ export default function Home(){
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Inter:wght@400;700&family=Poppins:wght@600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600&family=Nunito+Sans:wght@600&family=Archivo:wght@600&family=Space+Grotesk:wght@600&display=swap" rel="stylesheet" />
       </Head>
+
       <main className="wrap">
         <div className="header">
           <div className="title">Artwork Generator</div>
@@ -113,8 +105,11 @@ export default function Home(){
               </div>
             </section>
 
+            {/* ↑ MORE VERTICAL PADDING BEFORE TABS */}
+            <div className="mtXL" />
+
             {/* Tabs */}
-            <div className="row" style={{marginTop:20, gap:16, alignItems:'flex-end'}}>
+            <div className="row" style={{gap:16, alignItems:'flex-end'}}>
               <div style={{font:'700 16px/24px "IBM Plex Mono", ui-monospace'}}>Add Prompts:</div>
               <div className="tabs">
                 {[
@@ -134,7 +129,7 @@ export default function Home(){
               </div>
             </div>
 
-            {/* Pills for active tab only */}
+            {/* Pills for active tab */}
             <div className="pills">
               {PROMPTS[activeTab].map(v => (
                 <div
@@ -148,7 +143,7 @@ export default function Home(){
             </div>
 
             {images.length>0 && (
-              <section style={{marginTop:24}}>
+              <section className="mtL">
                 <div style={{font:'600 20px/30px Poppins', margin:'16px 0'}}>Today</div>
                 <div className="grid">
                   {images.map((src,i)=>(
@@ -169,14 +164,14 @@ export default function Home(){
         )}
 
         {mode==='edit' && selected && (
-          <Editor data={selected} goBack={()=>setMode('gen')} />
+          <Editor data={selected} onClose={()=>setMode('gen')} />
         )}
       </main>
     </>
   )
 }
 
-function Editor({ data }){
+function Editor({ data, onClose }){
   const W = 900, H = 900, SAFE = 0.10;
   const canvasRef = useRef(null);
   const [img, setImg] = useState(null);
@@ -274,35 +269,81 @@ function Editor({ data }){
 
   return (
     <section className="editor">
+      {/* Close/back button anchored above top-right */}
+      <button className="closeBtn" onClick={onClose} aria-label="Close editor and go back">
+        {/* simple X icon */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+
       <div className="preview">
         <canvas ref={canvasRef} className="canvas" width={W} height={H} />
         <div className="safe" />
       </div>
-      <aside className="rightcol">
+
+      {/* Sidebar panel with white bg + stroke */}
+      <aside className="rightcol panel">
         <div className="sideTitle">Text Prompt:</div>
         <div className="sideBox">{data.prompt || '—'}</div>
 
         <div className="sideTitle">Add Text:</div>
-        <input className="select" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
-        <div style={{height:8}} />
-        <input className="select" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
+        <input className="control" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
+        <div style={{height:12}} />
+        <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
 
         <div className="sideTitle">Typography</div>
-        <select className="select" value={font} onChange={e=>setFont(e.target.value)}>
+        <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
           {FONTS.map(f => <option key={f.css} value={f.css}>{f.label}</option>)}
         </select>
-        <div className="row2" style={{marginTop:8}}>
-          <input type="color" className="color" value={color} onChange={e=>setColor(e.target.value)} />
-          <input type="number" min="24" max="300" step="2" className="number" value={size} onChange={e=>setSize(parseInt(e.target.value||'0',10))} />
+
+        <div className="row2" style={{marginTop:12}}>
+          <input type="color" className="color control" value={color} onChange={e=>setColor(e.target.value)} />
+          <input type="number" min="24" max="300" step="2" className="control" value={size} onChange={e=>setSize(parseInt(e.target.value||'0',10))} />
         </div>
-        <div className="row3" style={{marginTop:8}}>
+
+        {/* Alignment buttons with nicer visuals */}
+        <div className="row3" style={{marginTop:12}}>
           {['left','center','right'].map(a => (
-            <div key={a} className={'radio'+(a===align?' radioOn':'')} onClick={()=>setAlign(a)}>{a[0].toUpperCase()}</div>
+            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)} aria-label={`Align ${a}`}>
+              {a==='left' && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18M3 12h12M3 18h18"/>
+                </svg>
+              )}
+              {a==='center' && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18M6 12h12M3 18h18"/>
+                </svg>
+              )}
+              {a==='right' && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18M9 12h12M3 18h18"/>
+                </svg>
+              )}
+            </button>
           ))}
           {['top','middle','bottom'].map(p => (
-            <div key={p} className={'radio'+(p===vpos?' radioOn':'')} onClick={()=>setVpos(p)}>{p[0].toUpperCase()}</div>
+            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)} aria-label={`Vertical ${p}`}>
+              {p==='top' && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M8 9l4-4 4 4"/>
+                </svg>
+              )}
+              {p==='middle' && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/>
+                </svg>
+              )}
+              {p==='bottom' && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 19V5M8 15l4 4 4-4"/>
+                </svg>
+              )}
+            </button>
           ))}
         </div>
+
         <div style={{height:16}} />
         <button className="btn btnPrimary" onClick={downloadPNG}>Upscale & Download</button>
       </aside>
