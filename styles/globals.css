@@ -8,7 +8,7 @@ body { margin:0; font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Rob
 
 .wrap{ max-width:1200px; margin:0 auto; padding:0 24px 72px; }
 .header{ display:flex; align-items:center; justify-content:space-between; gap:24px; margin:48px 0 24px; }
-.title{ font:700 48px/48px "Poppins", sans-serif; letter-spacing:-.01em; }
+.title{ font:700 40px/40px "Poppins", sans-serif; letter-spacing:-.01em; }
 
 .card{ background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 0 20px rgba(0,16,187,.10); padding:32px; }
 .promptGrid{ display:grid; grid-template-columns:1fr auto; gap:16px; }
