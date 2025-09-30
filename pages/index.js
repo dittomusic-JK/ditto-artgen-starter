@@ -195,12 +195,49 @@ function Editor({ data, onClose }){
   const [align,setAlign]   = useState('center'); // left|center|right
   const [vpos,setVpos]     = useState('bottom'); // top|middle|bottom
 
-  // load image
-  useEffect(()=>{
-    const i = new Image();
-    i.onload = ()=> setImg(i);
-    i.src = data.src;
-  },[data.src]);
+// load image with CORS + proxy fallback
+useEffect(()=>{
+  let stopped = false;
+
+  async function load(){
+    try {
+      let src = data.src;
+
+      // If not a data URL, try CORS first. If that still taints, we’ll proxy.
+      if (!src.startsWith('data:')) {
+        // Try direct CORS load
+        const testImg = new Image();
+        testImg.crossOrigin = 'anonymous';
+        const direct = await new Promise((resolve, reject)=>{
+          testImg.onload = ()=>resolve({ok:true, img:testImg});
+          testImg.onerror = ()=>reject(new Error('direct-load-failed'));
+          testImg.src = src + (src.includes('?') ? '&' : '?') + 'corsfix=' + Date.now();
+        }).catch(()=>({ok:false}));
+
+        if (!direct?.ok) {
+          // Use proxy → returns data URL
+          const resp = await fetch(`/api/proxy-image?url=${encodeURIComponent(src)}`);
+          const json = await resp.json();
+          if (!resp.ok || !json?.dataUrl) throw new Error('proxy-failed');
+          src = json.dataUrl;
+        }
+      }
+
+      const i = new Image();
+      i.crossOrigin = 'anonymous';
+      i.onload = ()=>{ if(!stopped) setImg(i); };
+      i.onerror = ()=>{ console.warn('image load failed'); };
+      i.src = src;
+    } catch (e) {
+      console.error('Image load error', e);
+      alert('Could not load the image for export. Try generating again.');
+    }
+  }
+
+  load();
+  return ()=>{ stopped = true; }
+},[data.src]);
+
 
   // draw preview
   useEffect(()=>{
