@@ -7,13 +7,13 @@ html, body, #__next { height: 100%; }
 body {
   margin:0;
   font-family:"DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: var(--bg); /* off-white FEFDFF for the whole generator */
+  background: var(--bg);
   color: var(--ink);
 }
 
 /* layout */
 .wrap{ max-width:1200px; margin:0 auto; padding:0 24px 72px; }
-.header{ display:flex; align-items:center; justify-content:space-between; gap:24px; margin:32px 0 32px; }
+.header{ display:flex; align-items:center; justify-content:space-between; gap:24px; margin:48px 0 24px; }
 .title{ font:700 48px/48px "Poppins", sans-serif; letter-spacing:-.01em; }
 
 /* cards / panels */
@@ -24,33 +24,31 @@ body {
   box-shadow:0 0 20px rgba(0,16,187,.10);
   padding:32px;
 }
-.panel{ /* right sidebar panel: pure white + stroke */
-  background:#fff;
-  border-left:1px solid var(--border);
-  padding:0 24px 24px;
-}
+.panel{ background:#fff; border-left:1px solid var(--border); padding:0 24px 24px; }
 
 /* prompt row */
 .promptGrid{ display:grid; grid-template-columns:1fr auto; gap:16px; }
-.input{ font:400 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border:0px solid var(--border); border-radius:12px; background:#fff; }
+.input{ font:400 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:#fff; }
 
 /* buttons */
 .btn{ border:0; cursor:pointer; border-radius:100px; padding:16px 32px; color:#fff; background:var(--ink); font:600 16px/16px "Poppins"; }
 .btnPrimary{ background:var(--purple); }
+.btnBlock{ width:100%; }
+.btnGradient{ background: linear-gradient(45deg,#0400ff 20%,#8800ff 74%); }
 
 /* spacing helpers */
 .mtL{ margin-top:32px; }
-.mtXL{ margin-top:48px; }   /* used to increase gap between prompt & tabs */
+.mtXL{ margin-top:48px; }
 
 /* tabs & pills */
-.row{ display:flex; gap:24px; align-items:center; }
+.row{ display:flex; gap:16px; align-items:center; }
 .tabs { display:flex; gap:8px; }
 .tab {
   border:1px solid var(--border);
   background:#F3F3FF;
   color:#000;
   border-radius:8px;
-  padding:8px 24px;
+  padding:8px 16px;
   font:700 16px/24px "IBM Plex Mono", ui-monospace;
   cursor:pointer;
 }
@@ -68,6 +66,20 @@ body {
 /* results grid */
 .grid{ display:grid; gap:32px; grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:16px; }
 .thumb{ width:100%; aspect-ratio:1/1; border-radius:8px; background:#f5f6ff; display:block; object-fit:cover; cursor:pointer; }
+
+/* loading state */
+.loadingWrap{
+  display:flex; align-items:center; justify-content:center;
+  height:260px; margin-top:16px;
+  border:1px dashed var(--border); border-radius:12px; background:#fff;
+}
+.spinner{
+  width:56px; height:56px; border-radius:50%;
+  border:4px solid rgba(151,71,255,.2);
+  border-top-color:#5F1FFF;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* editor layout */
 .editor{
@@ -91,15 +103,12 @@ body {
 }
 .safe{ position:absolute; inset:5%; border:1px dashed rgba(16,31,60,.15); border-radius:8px; pointer-events:none; }
 
-/* close/back button anchored above top-right of artwork */
+/* close/back */
 .closeBtn{
   position:absolute;
-  top:-40px;            /* sits above artwork */
-  right:-40px;          /* hugs top-right corner */
-  width:40px; height:40px;
-  border-radius:999px;
-  background:#fff;
-  border:1px solid var(--border);
+  top:-40px; right:-40px;
+  width:40px; height:40px; border-radius:999px;
+  background:#fff; border:1px solid var(--border);
   box-shadow:0 6px 18px rgba(0,0,0,.06);
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
@@ -108,35 +117,28 @@ body {
 /* sidebar */
 .rightcol{ width:360px; }
 .sideTitle{ font:700 16px/24px "Poppins", sans-serif; margin:16px 0 8px; }
-.sideBox{
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:16px;
-  color:var(--muted);
-  white-space:pre-wrap;
-  background:#fff;
-}
+.sideBox{ border:1px solid var(--border); border-radius:8px; padding:16px; color:var(--muted); white-space:pre-wrap; background:#fff; }
 
-/* Controls — unify sizes */
+/* unified controls */
 .control{ height:44px; width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:#fff; color:#000; box-sizing:border-box; }
 .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .row3{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 
-/* style native color input to align heights */
-.color.control{
-  padding:0;
-  appearance:none;
+/* color + dropdown row (Title/Artist) */
+.colorRow{ display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:center; }
+.colorSwatch{
+  width:36px; height:36px; border-radius:9999px; border:1px solid var(--muted);
+  padding:0; background:#fff; display:flex; align-items:center; justify-content:center;
 }
-.color.control::-webkit-color-swatch-wrapper { padding:0; }
-.color.control::-webkit-color-swatch { border:none; border-radius:6px; }
-.color.control::-moz-color-swatch { border:none; border-radius:6px; }
+.colorInput{
+  width:28px; height:28px; border-radius:9999px;
+  appearance:none; border:none; padding:0; cursor:pointer;
+}
+.colorInput::-webkit-color-swatch-wrapper{ padding:0; }
+.colorInput::-webkit-color-swatch{ border:none; border-radius:9999px; }
+.colorInput::-moz-color-swatch{ border:none; border-radius:9999px; }
 
-/* Alignment buttons — upgraded look */
-.aln{
-  height:44px; border:1px solid var(--border); border-radius:8px; background:#F9F9FF;
-  display:flex; align-items:center; justify-content:center; cursor:pointer;
-}
-.alnOn{ background:#fff; outline:2px solid #E7E7FF; }
+.miniSelect{ height:44px; width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:#fff; color:#000; }
 
 /* canvas */
 .canvas{ width:100%; height:100%; display:block; }
