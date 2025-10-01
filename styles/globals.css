@@ -29,7 +29,7 @@ body {
 
 /* prompt row */
 .promptGrid{ display:grid; grid-template-columns:1fr auto; gap:16px; }
-.input{ font:300 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border:0px; border-radius:12px; background:#fff; }
+.input{ font:300 20px/30px "Poppins"; font-weight:400px; color:var(--sub); padding:14px 16px; border:0px; border-radius:12px; background:#fff; }
 
 .input::placeholder {
   font-family: "Poppins", sans-serif; /* or DM Sans if you prefer */
