@@ -136,7 +136,7 @@ body {
   height:100vh;
   background:#fff;
   border-left:1px solid var(--border);
-  padding:96px 24px 24px; /* top padding ≈ aligns with header title baseline */
+  padding:32px 24px 24px; /* top padding ≈ aligns with header title baseline */
   overflow-y:auto;
   box-sizing:border-box;
 }
@@ -192,7 +192,7 @@ body {
   .grid{ grid-template-columns:repeat(2,1fr); }
   .editor{ grid-template-columns:1fr; }
   .rightcol{ width:auto; }
-  .closeBtn{ top:-32px; right:-8px; }
+  .closeBtn{ top:32px; right:8px; }
 }
 
 /* --- Patch: helpers for updated Typography UI --- */
