@@ -119,8 +119,8 @@ body {
 /* Close button anchored to the preview's top-right */
 .closeBtn{
   position:absolute;
-  top:-32px;
-  right:-32px;
+  top:-48px;
+  right:-64px;
   width:36px; height:36px;
   border-radius:999px;
   background:#fff;
