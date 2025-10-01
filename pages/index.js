@@ -310,8 +310,14 @@ function Editor({ data, onClose }){
       </div>
 
       <aside className="rightcol panel">
-        <div className="sideTitle">Text Prompt:</div>
-        <div className="sideBox">{data.prompt || '—'}</div>
+        <div style={{ 
+  font:'500 14px/20px "IBM Plex Mono", ui-monospace', 
+  color:'var(--sub)', 
+  margin:'8px 0 16px' 
+}}>
+  {data.prompt || '—'}
+</div>
+
 
         <div className="sideTitle">Add Text:</div>
         <input className="control" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
