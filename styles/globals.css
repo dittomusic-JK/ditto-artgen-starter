@@ -31,6 +31,13 @@ body {
 .promptGrid{ display:grid; grid-template-columns:1fr auto; gap:16px; }
 .input{ font:300 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border:0px; border-radius:12px; background:#fff; }
 
+.input::placeholder {
+  font-family: "Poppins", sans-serif; /* or DM Sans if you prefer */
+  font-weight: 400; /* normal weight */
+  color: var(--sub); /* keep same muted colour */
+  opacity: 1; /* ensure consistent appearance across browsers */
+}
+
 .input:focus {
   outline: none;
   box-shadow: none;
