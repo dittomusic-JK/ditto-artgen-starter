@@ -13,7 +13,7 @@ body {
 
 /* layout */
 .wrap{ max-width:1200px; margin:0 auto; padding:0 24px 72px; }
-.header{ display:flex; align-items:center; justify-content:space-between; gap:24px; margin:64px 0 24px; }
+.header{ display:flex; align-items:center; justify-content:space-between; gap:24px; margin:48px 0 48px; }
 .title{ font:700 48px/48px "Poppins", sans-serif; letter-spacing:-.01em; }
 
 /* cards / panels */
