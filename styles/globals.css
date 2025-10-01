@@ -160,11 +160,20 @@ body {
 .grid4{ display:grid; grid-template-columns:auto 1fr auto 1fr; gap:8px; align-items:center; }
 .mt8{ margin-top:8px; }
 
-/* Alignment icon buttons */
-.aln {
+/* Segmented button groups */
+.alnGroup {
+  display: flex;
+  flex: 1;
   border: 1px solid var(--border);
   border-radius: 6px;
+  overflow: hidden;
+}
+
+.alnGroup button {
+  flex: 1;
+  border: none;
   background: #fff;
+  color: var(--ink);
   padding: 6px;
   display: flex;
   align-items: center;
@@ -172,11 +181,18 @@ body {
   cursor: pointer;
 }
 
-.alnOn {
+/* Divider between buttons */
+.alnGroup button + button {
+  border-left: 1px solid var(--border);
+}
+
+/* Active state */
+.alnGroup button.alnOn {
   background: var(--purple);
   color: #fff;
-  border-color: var(--purple);
+  border-radius: 6px; /* pill-like highlight */
 }
+
 
 .rowColors {
   display:flex;
