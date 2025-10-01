@@ -16,73 +16,16 @@ const FONTS = [
 
 const TABS = ['genre', 'mood', 'style', 'texture'];
 const PROMPTS = {
-  genre: [
-    'Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave',
-    'Afrobeats','Metalcore','Neo-Soul',
-    // new
-    'R&B / Soul','Punk Rock','Folk / Acoustic','Trap','Jazz Fusion','Reggaeton',
-    'Country / Americana','Grunge','House / Techno','Gospel / Spiritual','Drill'
-  ],
-  mood: [
-    'Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive',
-    'Mellow','Epic / Cinematic',
-    // new
-    'Melancholic','Euphoric','Raw / Unpolished','Hopeful','Haunting',
-    'Introspective','Rebellious','Playful','Futuristic','Romantic','Chill / Relaxed'
-  ],
-  style: [
-    'Photographic','Illustration','Collage','Vaporwave','Minimal','Oil Paint',
-    '3D Render','Graffiti',
-    // new
-    'Surrealism','Abstract Shapes','Anime / Manga Inspired','Retro Comic Book',
-    'Psychedelic','Ink Sketch / Line Art','Watercolor','Stencil / Street Art',
-    'Cyberpunk','Retro Futurism','Mixed Media'
-  ],
-  texture: [
-    'Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W',
-    // new
-    'VHS Static','Paper Collage / Cutout','Torn Paper','Spray Paint / Airbrush',
-    'Metallic / Chrome','Velvet / Fabric Grain','Photocopy / Zine Print',
-    'Motion Blur','Pixelated / 8-bit','Holographic / Iridescent','Smoke / Mist Overlay'
-  ]
+  genre: ['Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave','Afrobeats','Metalcore','Neo-Soul','R&B / Soul','Punk Rock','Folk / Acoustic','Trap','Jazz Fusion','Reggaeton','Country / Americana','Grunge','House / Techno','Gospel / Spiritual','Drill'],
+  mood: ['Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive','Mellow','Epic / Cinematic','Melancholic','Euphoric','Raw / Unpolished','Hopeful','Haunting','Introspective','Rebellious','Playful','Futuristic','Romantic','Chill / Relaxed'],
+  style: ['Photographic','Illustration','Collage','Vaporwave','Minimal','Oil Paint','3D Render','Graffiti','Surrealism','Abstract Shapes','Anime / Manga Inspired','Retro Comic Book','Psychedelic','Ink Sketch / Line Art','Watercolor','Stencil / Street Art','Cyberpunk','Retro Futurism','Mixed Media'],
+  texture: ['Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W','VHS Static','Paper Collage / Cutout','Torn Paper','Spray Paint / Airbrush','Metallic / Chrome','Velvet / Fabric Grain','Photocopy / Zine Print','Motion Blur','Pixelated / 8-bit','Holographic / Iridescent','Smoke / Mist Overlay']
 };
-
-const COLOR_PRESETS = [
-  { name: 'White',  hex:'#FFFFFF' },
-  { name: 'Black',  hex:'#0F1222' },
-  { name: 'Ditto Purple', hex:'#5F1FFF' },
-  { name: 'Electric Blue', hex:'#0400FF' },
-  { name: 'Magenta', hex:'#FF00FF' },
-  { name: 'Sun', hex:'#FFD84D' }
-];
-
-const TITLE_SIZE_OPTS = [64, 72, 84, 96, 112, 128, 144, 160];
-const ARTIST_SIZE_OPTS = [36, 42, 48, 54, 60, 66, 72, 80];
 
 function assembledPrompt(text, picksByCat){
   const flat = TABS.flatMap(cat => picksByCat[cat]);
   const on = flat.join(', ');
   return [text, on].filter(Boolean).join(' — ');
-}
-
-// placeholder thumbnails (client-side)
-function placeholderDataUrl(seed, label='Art'){
-  const size = 1024;
-  const c = document.createElement('canvas');
-  c.width = size; c.height = size;
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0,0,size,size);
-  g.addColorStop(0, `hsl(${(seed*73)%360} 70% 90%)`);
-  g.addColorStop(1, `hsl(${(seed*137)%360} 70% 70%)`);
-  ctx.fillStyle = g; ctx.fillRect(0,0,size,size);
-  ctx.fillStyle = 'rgba(0,0,0,.35)';
-  ctx.fillRect(0, size/2-52, size, 104);
-  ctx.fillStyle = 'white';
-  ctx.font = '700 64px Poppins, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`${label} ${seed}`, size/2, size/2);
-  return c.toDataURL('image/png');
 }
 
 function computeXY({align, vpos, W, H, inset, textW, lineH, isTitle}){
@@ -103,7 +46,6 @@ export default function Home(){
   const [activeTab, setActiveTab] = useState('genre');
   const [picks,setPicks] = useState({ genre:[], mood:[], style:[], texture:[] });
   const [images,setImages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [selected,setSelected] = useState(null);
 
   const toggle = (value) => {
@@ -116,8 +58,7 @@ export default function Home(){
 
   async function onGenerate(){
     try {
-      setIsLoading(true);
-      setImages([]);
+      setImages([]); // clear
       const resp = await fetch('/api/generate', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -128,8 +69,6 @@ export default function Home(){
       setImages(data.images || []);
     } catch (e) {
       alert(e.message || 'Something went wrong generating images.');
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -157,7 +96,6 @@ export default function Home(){
 
             <div className="mtXL" />
 
-            {/* Tabs */}
             <div className="row" style={{gap:16, alignItems:'flex-end'}}>
               <div style={{font:'700 16px/24px "IBM Plex Mono", ui-monospace'}}>Add Prompts:</div>
               <div className="tabs">
@@ -178,7 +116,6 @@ export default function Home(){
               </div>
             </div>
 
-            {/* Pills for active tab */}
             <div className="pills">
               {PROMPTS[activeTab].map(v => (
                 <div
@@ -191,14 +128,7 @@ export default function Home(){
               ))}
             </div>
 
-            {/* Loading or results */}
-            {isLoading && (
-              <div className="loadingWrap">
-                <div className="spinner" />
-              </div>
-            )}
-
-            {!isLoading && images.length>0 && (
+            {images.length>0 && (
               <section className="mtL">
                 <div style={{font:'600 20px/30px Poppins', margin:'16px 0'}}>Today</div>
                 <div className="grid">
@@ -228,63 +158,30 @@ export default function Home(){
 }
 
 function Editor({ data, onClose }){
-  const W = 900, H = 900, SAFE = 0.05; // 5% safe zone
+  const W = 900, H = 900, SAFE = 0.08;
   const canvasRef = useRef(null);
   const [img, setImg] = useState(null);
 
-  // separate styling for Title & Artist
-  const [title,setTitle]   = useState('');
   const [artist,setArtist] = useState('');
+  const [title,setTitle]   = useState('');
   const [font,setFont]     = useState(FONTS[0].css);
 
   const [titleColor,setTitleColor]   = useState('#0F1222');
   const [artistColor,setArtistColor] = useState('#0F1222');
-  const [titleSize,setTitleSize]     = useState(120);
-  const [artistSize,setArtistSize]   = useState(72);
 
-  const [align,setAlign]   = useState('center'); // left|center|right
-  const [vpos,setVpos]     = useState('bottom'); // top|middle|bottom
+  const [titleSize,setTitleSize]   = useState(120);
+  const [artistSize,setArtistSize] = useState(72);
 
-  // load image with CORS + proxy fallback (so export works)
+  const [align,setAlign]   = useState('center');
+  const [vpos,setVpos]     = useState('bottom');
+
   useEffect(()=>{
-    let stopped = false;
-    async function load(){
-      try {
-        let src = data.src;
-        if (!src.startsWith('data:')) {
-          // Try direct CORS load
-          const testImg = new Image();
-          testImg.crossOrigin = 'anonymous';
-          const direct = await new Promise((resolve, reject)=>{
-            testImg.onload = ()=>resolve({ok:true, img:testImg});
-            testImg.onerror = ()=>reject(new Error('direct-load-failed'));
-            testImg.src = src + (src.includes('?') ? '&' : '?') + 'corsfix=' + Date.now();
-          }).catch(()=>({ok:false}));
-
-          if (!direct?.ok) {
-            // Proxy → returns data URL
-            const resp = await fetch(`/api/proxy-image?url=${encodeURIComponent(src)}`);
-            const json = await resp.json();
-            if (!resp.ok || !json?.dataUrl) throw new Error('proxy-failed');
-            src = json.dataUrl;
-          }
-        }
-
-        const i = new Image();
-        i.crossOrigin = 'anonymous';
-        i.onload = ()=>{ if(!stopped) setImg(i); };
-        i.onerror = ()=>{ console.warn('image load failed'); };
-        i.src = src;
-      } catch (e) {
-        console.error('Image load error', e);
-        alert('Could not load the image for export. Try generating again.');
-      }
-    }
-    load();
-    return ()=>{ stopped = true; }
+    const i = new Image();
+    i.crossOrigin = "anonymous";
+    i.onload = ()=> setImg(i);
+    i.src = data.src;
   },[data.src]);
 
-  // draw preview
   useEffect(()=>{
     if(!canvasRef.current || !img) return;
     const ctx = canvasRef.current.getContext('2d');
@@ -293,152 +190,122 @@ function Editor({ data, onClose }){
 
     ctx.textBaseline = 'top';
 
-    // TITLE
+    // Title
     ctx.fillStyle = titleColor;
     ctx.font = `${titleSize}px "${font}"`;
     const titleW = ctx.measureText(title).width;
-    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH:titleSize*1.1, isTitle:true});
+    const {x:tx,y:ty,sx,sy,sw} = computeXY({align,vpos,W,H,inset:SAFE,textW:titleW,lineH:titleSize*1.2,isTitle:true});
     let textXTitle = tx;
-    if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
-    if(align==='right'){  textXTitle = sx + (sw - titleW);  }
+    if (align==='center') textXTitle = sx + (sw - titleW)/2;
+    if (align==='right')  textXTitle = sx + (sw - titleW);
     if (title) ctx.fillText(title, textXTitle, ty);
 
-    // ARTIST (beneath title, using artist controls)
-    if (artist){
-      ctx.fillStyle = artistColor;
-      const aSize = Math.round(artistSize);
-      ctx.font = `${aSize}px "${font}"`;
-      const aW = ctx.measureText(artist).width;
-      let ax = sx;
-      if(align==='center') ax = sx + (sw - aW)/2;
-      if(align==='right')  ax = sx + (sw - aW);
-      const ay = (vpos==='bottom') ? (ty + aSize*1.2*1.6) : (ty + aSize*1.2*1.2);
-      ctx.fillText(artist, ax, ay);
-    }
-  },[img, title, artist, font, titleSize, artistSize, titleColor, artistColor, align, vpos]);
+    // Artist
+    ctx.fillStyle = artistColor;
+    ctx.font = `${artistSize}px "${font}"`;
+    const aW = ctx.measureText(artist).width;
+    let ax = sx;
+    if (align==='center') ax = sx + (sw - aW)/2;
+    if (align==='right')  ax = sx + (sw - aW);
+    const ay = (vpos==='bottom') ? (ty + artistSize*1.6) : (ty + artistSize*1.2);
+    if (artist) ctx.fillText(artist, ax, ay);
+  },[img, artist, title, font, titleSize, artistSize, titleColor, artistColor, align, vpos]);
 
-  // robust export at 3000x3000
   async function downloadPNG(){
-    try {
-      if (document.fonts?.ready) await document.fonts.ready;
+    const OUT = 3000;
+    const out = document.createElement('canvas');
+    out.width = OUT; out.height = OUT;
+    const ctx = out.getContext('2d');
+    ctx.drawImage(img,0,0,OUT,OUT);
 
-      const OUT = 3000;
-      const out = document.createElement('canvas');
-      out.width = OUT; out.height = OUT;
-      const ctx = out.getContext('2d');
+    ctx.textBaseline = 'top';
 
-      // base image
-      ctx.drawImage(img, 0, 0, OUT, OUT);
+    // Title
+    ctx.fillStyle = titleColor;
+    ctx.font = `${Math.round(titleSize*(OUT/W))}px "${font}"`;
+    const titleW = ctx.measureText(title).width;
+    const {x:tx,y:ty,sx,sy,sw} = computeXY({align,vpos,W:OUT,H:OUT,inset:SAFE,textW:titleW,lineH:titleSize*1.2,isTitle:true});
+    let textXTitle = tx;
+    if (align==='center') textXTitle = sx + (sw - titleW)/2;
+    if (align==='right')  textXTitle = sx + (sw - titleW);
+    if (title) ctx.fillText(title, textXTitle, ty);
 
-      // scale preview->export
-      const scale = OUT / W;
-      const bigTitleSize  = Math.round(titleSize * scale);
-      const bigArtistSize = Math.round(artistSize * scale);
+    // Artist
+    ctx.fillStyle = artistColor;
+    ctx.font = `${Math.round(artistSize*(OUT/W))}px "${font}"`;
+    const aW = ctx.measureText(artist).width;
+    let ax = sx;
+    if (align==='center') ax = sx + (sw - aW)/2;
+    if (align==='right')  ax = sx + (sw - aW);
+    const ay = (vpos==='bottom') ? (ty + artistSize*1.6) : (ty + artistSize*1.2);
+    if (artist) ctx.fillText(artist, ax, ay);
 
-      ctx.textBaseline = 'top';
-
-      // TITLE
-      ctx.fillStyle = titleColor;
-      ctx.font = `${bigTitleSize}px "${font}"`;
-      const titleW = ctx.measureText(title).width;
-      const {x:tx,y:ty,sx,sy,sw} = computeXY({
-        align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH:bigTitleSize*1.1, isTitle:true
-      });
-      let textXTitle = tx;
-      if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
-      if(align==='right'){  textXTitle = sx + (sw - titleW);  }
-      if (title) ctx.fillText(title, textXTitle, ty);
-
-      // ARTIST
-      if (artist){
-        ctx.fillStyle = artistColor;
-        ctx.font = `${bigArtistSize}px "${font}"`;
-        const aW = ctx.measureText(artist).width;
-        let ax = sx;
-        if(align==='center') ax = sx + (sw - aW)/2;
-        if(align==='right')  ax = sx + (sw - aW);
-        const ay = (vpos==='bottom') ? (ty + bigArtistSize*1.2*1.6) : (ty + bigArtistSize*1.2*1.2);
-        ctx.fillText(artist, ax, ay);
-      }
-
-      out.toBlob((blob)=>{
-        if(!blob) return alert('Could not export. Check the console for details.');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'ditto-cover-3000.png';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
-    } catch(err){
-      console.error(err);
-      alert('Could not export. Check the console for details.');
-    }
+    out.toBlob((blob)=>{
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ditto-cover-3000.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    },'image/png');
   }
 
   return (
     <section className="editor">
-      {/* Close/back button */}
       <button className="closeBtn" onClick={onClose} aria-label="Close editor and go back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M18 6L6 18M6 6l12 12"/>
-        </svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
 
       <div className="preview">
         <canvas ref={canvasRef} className="canvas" width={W} height={H} />
-        <div className="safe" />
       </div>
 
       <aside className="rightcol panel">
         <div className="sideTitle">Text Prompt:</div>
         <div className="sideBox">{data.prompt || '—'}</div>
 
-        {/* Title controls */}
-        <div className="sideTitle">Release Title</div>
+        <div className="sideTitle">Add Text:</div>
+        <input className="control" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
+        <div style={{height:12}} />
         <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
-        <div className="colorRow" style={{marginTop:8}}>
-          <div className="colorSwatch">
-            <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} />
-          </div>
-          <select className="miniSelect" value={titleColor} onChange={e=>setTitleColor(e.target.value)}>
-            {COLOR_PRESETS.map(c => <option key={c.hex} value={c.hex}>{c.name}</option>)}
-          </select>
-        </div>
-        <div className="row2" style={{marginTop:8}}>
+
+        <div className="sideTitle">Typography</div>
+        <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
+          {FONTS.map(f => (
+            <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Colors + sizes */}
+        <div className="grid4 mt8">
+          <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} />
           <select className="miniSelect" value={titleSize} onChange={e=>setTitleSize(parseInt(e.target.value,10))}>
-            {TITLE_SIZE_OPTS.map(s => <option key={s} value={s}>{s}pt</option>)}
+            {[64,72,84,96,112,128,144,160].map(s => <option key={s} value={s}>{s}pt</option>)}
           </select>
-          <select className="miniSelect" value={font} onChange={e=>setFont(e.target.value)}>
-            {FONTS.map(f => <option key={f.css} value={f.css}>{f.label}</option>)}
+          <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} />
+          <select className="miniSelect" value={artistSize} onChange={e=>setArtistSize(parseInt(e.target.value,10))}>
+            {[36,42,48,54,60,66,72,80].map(s => <option key={s} value={s}>{s}pt</option>)}
           </select>
         </div>
 
-        {/* Artist controls */}
-        <div className="sideTitle" style={{marginTop:16}}>Artist Name</div>
-        <input className="control" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
-        <div className="colorRow" style={{marginTop:8}}>
-          <div className="colorSwatch">
-            <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} />
-          </div>
-          <select className="miniSelect" value={artistColor} onChange={e=>setArtistColor(e.target.value)}>
-            {COLOR_PRESETS.map(c => <option key={c.hex} value={c.hex}>{c.name}</option>)}
-          </select>
-        </div>
-        <div className="row2" style={{marginTop:8}}>
-          <select className="miniSelect" value={artistSize} onChange={e=>setArtistSize(parseInt(e.target.value,10))}>
-            {ARTIST_SIZE_OPTS.map(s => <option key={s} value={s}>{s}pt</option>)}
-          </select>
-          {/* keep font dropdown in Title row to reduce clutter; duplicate here if you want independent fonts */}
-          <div />
+        {/* Alignment buttons */}
+        <div className="row3" style={{marginTop:12}}>
+          {['left','center','right'].map(a => (
+            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)}>
+              {a}
+            </button>
+          ))}
+          {['top','middle','bottom'].map(p => (
+            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)}>
+              {p}
+            </button>
+          ))}
         </div>
 
         <div style={{height:16}} />
-        <button className="btn btnPrimary btnBlock btnGradient" onClick={downloadPNG}>
-          Upscale & Download
-        </button>
+        <button className="btn btnPrimary full" onClick={downloadPNG}>Upscale & Download</button>
       </aside>
     </section>
   )
