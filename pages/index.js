@@ -1,17 +1,34 @@
 import Head from 'next/head'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 
+/** ——— Font catalog ———
+ * label: UI label
+ * css:   font-family name exactly as Google provides
+ * demo:  short demo text shown in the picker
+ */
 const FONTS = [
-  {label:'DM Sans', css:'DM Sans'},
-  {label:'Inter', css:'Inter'},
-  {label:'Poppins', css:'Poppins'},
-  {label:'Bebas Neue', css:'Bebas Neue'},
-  {label:'Barlow Condensed', css:'Barlow Condensed'},
-  {label:'Oswald', css:'Oswald'},
-  {label:'Montserrat Alternates', css:'Montserrat Alternates'},
-  {label:'Nunito Sans', css:'Nunito Sans'},
-  {label:'Archivo', css:'Archivo'},
-  {label:'Space Grotesk', css:'Space Grotesk'}
+  { label:'DM Sans', css:'DM Sans', demo:'Aa' },
+  { label:'Inter', css:'Inter', demo:'Aa' },
+  { label:'Poppins', css:'Poppins', demo:'Aa' },
+  { label:'Bebas Neue', css:'Bebas Neue', demo:'Aa' },
+  { label:'Barlow Condensed', css:'Barlow Condensed', demo:'Aa' },
+  { label:'Oswald', css:'Oswald', demo:'Aa' },
+  { label:'Montserrat Alternates', css:'Montserrat Alternates', demo:'Aa' },
+  { label:'Nunito Sans', css:'Nunito Sans', demo:'Aa' },
+  { label:'Archivo', css:'Archivo', demo:'Aa' },
+  { label:'Space Grotesk', css:'Space Grotesk', demo:'Aa' },
+
+  // Added options
+  { label:'Averta (alt: Heebo)', css:'Heebo', demo:'Aa' },
+  { label:'Playfair Display', css:'Playfair Display', demo:'Aa' },
+  { label:'Libre Baskerville', css:'Libre Baskerville', demo:'Aa' },
+  { label:'Lora', css:'Lora', demo:'Aa' },
+  { label:'Merriweather', css:'Merriweather', demo:'Aa' },
+  { label:'Raleway', css:'Raleway', demo:'Aa' },
+  { label:'Rubik', css:'Rubik', demo:'Aa' },
+  { label:'Cabinet Grotesk (alt: Sora)', css:'Sora', demo:'Aa' },
+  { label:'Figtree', css:'Figtree', demo:'Aa' },
+  { label:'Instrument Sans', css:'Instrument Sans', demo:'Aa' },
 ];
 
 const FONT_SIZES = [
@@ -54,9 +71,9 @@ function assembledPrompt(text, picksByCat){
 
 function computeXY({align, vpos, W, H, inset, textW, lineH, isTitle}){
   const sx = W*inset, sy = H*inset, sw = W*(1-inset*2), sh = H*(1-inset*2);
-  const yTop = sy + (isTitle ? lineH*0.2 : lineH*1.4);
+  const yTop = sy + (isTitle ? lineH*0.32 : lineH*1.45);
   const yMid = sy + sh/2 - lineH/2;
-  const yBot = sy + sh - (isTitle ? lineH*2.0 : lineH*0.9);
+  const yBot = sy + sh - (isTitle ? lineH*2.05 : lineH*1.0);
   let x = sx;
   if (align==='center') x = sx + (sw - textW)/2;
   if (align==='right')  x = sx + (sw - textW);
@@ -64,6 +81,89 @@ function computeXY({align, vpos, W, H, inset, textW, lineH, isTitle}){
   return {x,y, sx,sy,sw,sh};
 }
 
+/* ------------ Font Picker (custom dropdown) ------------- */
+function FontPicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+
+  const current = FONTS.find(f => f.css === value) || FONTS[0];
+
+  const close = useCallback((e)=>{
+    if(!boxRef.current) return;
+    if (!boxRef.current.contains(e.target)) setOpen(false);
+  },[]);
+
+  useEffect(()=>{
+    document.addEventListener('mousedown', close);
+    return ()=> document.removeEventListener('mousedown', close);
+  },[close]);
+
+  return (
+    <div ref={boxRef} style={{ position:'relative' }}>
+      {/* Trigger */}
+      <button
+        type="button"
+        className="control"
+        onClick={()=>setOpen(v=>!v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}
+      >
+        <span style={{ fontFamily:`"${current.css}", sans-serif`, fontWeight:600 }}>{current.label}</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      {/* Menu */}
+      {open && (
+        <div
+          role="listbox"
+          tabIndex={-1}
+          style={{
+            position:'absolute', left:0, right:0, top:'calc(100% + 8px)',
+            background:'#fff', border:'1px solid var(--border)', borderRadius:12,
+            boxShadow:'0 16px 40px rgba(0,0,0,.08)', maxHeight:320, overflow:'auto', zIndex:20
+          }}
+        >
+          {FONTS.map(f => (
+            <button
+              key={f.css}
+              type="button"
+              role="option"
+              aria-selected={f.css===value}
+              onClick={() => { onChange(f.css); setOpen(false); }}
+              style={{
+                width:'100%', textAlign:'left', padding:'10px 12px',
+                display:'grid', gridTemplateColumns:'32px 1fr', gap:12,
+                background: f.css===value ? 'rgba(95,31,255,.06)' : '#fff',
+                border:'0', cursor:'pointer'
+              }}
+            >
+              <div
+                style={{
+                  width:32, height:32, borderRadius:8, border:'1px solid var(--border)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontFamily:`"${f.css}", sans-serif`, fontWeight:700
+                }}
+              >
+                {f.demo}
+              </div>
+              <div style={{ display:'flex', flexDirection:'column' }}>
+                <div style={{ font:'600 14px/18px "DM Sans", system-ui' }}>{f.label}</div>
+                <div style={{ fontFamily:`"${f.css}", sans-serif`, fontWeight:600, fontSize:12, opacity:.75 }}>
+                  Artist • Title
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* -------------------- Page -------------------- */
 export default function Home(){
   const [mode,setMode] = useState('gen'); // 'gen' | 'edit'
   const [prompt,setPrompt] = useState('');
@@ -105,7 +205,37 @@ export default function Home(){
       <Head>
         <title>Ditto Artwork Generator</title>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Inter:wght@400;700&family=Poppins:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600&family=Nunito+Sans:wght@600&family=Archivo:wght@600&family=Space+Grotesk:wght@600&display=swap" rel="stylesheet" />
+        {/* Load all families used above (kept concise but broad). 
+           If you trim FONTS, also trim this list. */}
+        <link
+          href={
+            'https://fonts.googleapis.com/css2?' +
+            [
+              'family=DM+Sans:wght@400;500;600;700',
+              'family=Inter:wght@400;600;700',
+              'family=Poppins:wght@400;600;700',
+              'family=Bebas+Neue',
+              'family=Barlow+Condensed:wght@600;700',
+              'family=Oswald:wght@500;700',
+              'family=Montserrat+Alternates:wght@600;700',
+              'family=Nunito+Sans:wght@600;700',
+              'family=Archivo:wght@600;700',
+              'family=Space+Grotesk:wght@600;700',
+              'family=Heebo:wght@600;700',
+              'family=Playfair+Display:wght@700',
+              'family=Libre+Baskerville:wght@700',
+              'family=Lora:wght@600;700',
+              'family=Merriweather:wght@700;800',
+              'family=Raleway:wght@600;700',
+              'family=Rubik:wght@600;700',
+              'family=Sora:wght@600;700',
+              'family=Figtree:wght@600;700',
+              'family=Instrument+Sans:wght@600;700',
+              'display=swap'
+            ].join('&')
+          }
+          rel="stylesheet"
+        />
       </Head>
 
       <main className="wrap">
@@ -117,7 +247,12 @@ export default function Home(){
           <>
             <section className="card">
               <div className="promptGrid">
-                <input className="input" placeholder="Describe the vibe of your artwork..." value={prompt} onChange={e=>setPrompt(e.target.value)} />
+                <input
+                  className="input"
+                  placeholder="Describe the vibe of your artwork..."
+                  value={prompt}
+                  onChange={e=>setPrompt(e.target.value)}
+                />
                 <button className="btn btnPrimary" onClick={onGenerate}>Generate</button>
               </div>
             </section>
@@ -194,6 +329,7 @@ export default function Home(){
   )
 }
 
+/* -------------------- Editor -------------------- */
 function Editor({ data, onClose }){
   const W = 900, H = 900, SAFE = 0.05;
   const canvasRef = useRef(null);
@@ -232,7 +368,7 @@ function Editor({ data, onClose }){
     ctx.fillStyle = titleColor;
     ctx.font = `${titleSize}px "${font}"`;
     const titleW = ctx.measureText(title).width;
-    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH:titleSize*1.1, isTitle:true});
+    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH:titleSize*1.14, isTitle:true});
     let textXTitle = tx;
     if(align==='center') textXTitle = sx + (sw - titleW)/2;
     if(align==='right')  textXTitle = sx + (sw - titleW);
@@ -246,7 +382,7 @@ function Editor({ data, onClose }){
       let ax = sx;
       if(align==='center') ax = sx + (sw - aW)/2;
       if(align==='right')  ax = sx + (sw - aW);
-      const ay = (vpos==='bottom') ? (ty + artistSize*1.2*1.6) : (ty + artistSize*1.2*1.2);
+      const ay = (vpos==='bottom') ? (ty + artistSize*1.28*1.6) : (ty + artistSize*1.28*1.2);
       ctx.fillText(artist, ax, ay);
     }
   },[img, title, artist, font, size, titleColor, artistColor, align, vpos]);
@@ -267,7 +403,7 @@ function Editor({ data, onClose }){
     ctx.fillStyle = titleColor;
     ctx.font = `${titleSizeBig}px "${font}"`;
     const titleW = ctx.measureText(title).width;
-    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH:titleSizeBig*1.1, isTitle:true});
+    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH:titleSizeBig*1.14, isTitle:true});
     let textXTitle = tx;
     if(align==='center') textXTitle = sx + (sw - titleW)/2;
     if(align==='right')  textXTitle = sx + (sw - titleW);
@@ -281,7 +417,7 @@ function Editor({ data, onClose }){
       let ax = sx;
       if(align==='center') ax = sx + (sw - aW)/2;
       if(align==='right')  ax = sx + (sw - aW);
-      const ay = (vpos==='bottom') ? (ty + artistSizeBig*1.2*1.6) : (ty + artistSizeBig*1.2*1.2);
+      const ay = (vpos==='bottom') ? (ty + artistSizeBig*1.28*1.6) : (ty + artistSizeBig*1.28*1.2);
       ctx.fillText(artist, ax, ay);
     }
 
@@ -331,14 +467,8 @@ function Editor({ data, onClose }){
 
         <div className="sideTitle">Typography</div>
 
-        {/* Row 1: Font family (full width) */}
-        <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
-          {FONTS.map(f => (
-            <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
-              {f.label}
-            </option>
-          ))}
-        </select>
+        {/* Row 1: Font family (custom visual picker) */}
+        <FontPicker value={font} onChange={setFont} />
 
         {/* Row 2: Colours (left) + Font size (fills rest) */}
         <div className="row mt8" style={{gap:12}}>
@@ -376,9 +506,8 @@ function Editor({ data, onClose }){
           </select>
         </div>
 
-        {/* Row 3: Alignment groups */}
+        {/* Row 3: Alignment groups (segmented look handled in CSS) */}
         <div className="row" style={{marginTop:12, gap:12}}>
-          {/* Horizontal */}
           <div className="alnGroup">
             {['left','center','right'].map(a => (
               <button
@@ -394,7 +523,6 @@ function Editor({ data, onClose }){
             ))}
           </div>
 
-          {/* Vertical */}
           <div className="alnGroup">
             {['top','middle','bottom'].map(p => (
               <button
@@ -419,4 +547,3 @@ function Editor({ data, onClose }){
     </section>
   )
 }
-
