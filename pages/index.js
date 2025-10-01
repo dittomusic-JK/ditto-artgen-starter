@@ -26,12 +26,25 @@ const FONT_SIZES = [
 
 const TABS = ['genre', 'mood', 'style', 'texture'];
 const PROMPTS = {
-  genre: ['Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave','Afrobeats','Metalcore','Neo-Soul'],
-  mood: ['Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive','Mellow','Epic / Cinematic'],
-  style: ['Photographic','Illustration','Collage','Vaporwave','Minimal','Oil Paint','3D Render','Graffiti'],
-  texture: ['Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W']
+  genre: [
+    'Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave',
+    'Afrobeats','Metalcore','Neo-Soul',
+    'R&B / Soul','Punk Rock','Folk / Acoustic','Trap','Jazz Fusion','Reggaeton',
+    'Country / Americana','Grunge','House / Techno','Gospel / Spiritual','Drill'
+  ],
+  mood: [
+    'Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive','Mellow','Epic / Cinematic',
+    'Melancholic','Euphoric','Raw / Unpolished','Hopeful','Haunting','Introspective','Rebellious','Playful','Futuristic','Romantic','Chill / Relaxed'
+  ],
+  style: [
+    'Photographic','Illustration','Collage','Vaporwave','Minimal','Oil Paint','3D Render','Graffiti',
+    'Surrealism','Abstract Shapes','Anime / Manga Inspired','Retro Comic Book','Psychedelic','Ink Sketch / Line Art','Watercolor','Stencil / Street Art','Cyberpunk','Retro Futurism','Mixed Media'
+  ],
+  texture: [
+    'Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W',
+    'VHS Static','Paper Collage / Cutout','Torn Paper','Spray Paint / Airbrush','Metallic / Chrome','Velvet / Fabric Grain','Photocopy / Zine Print','Motion Blur','Pixelated / 8-bit','Holographic / Iridescent','Smoke / Mist Overlay'
+  ]
 };
-
 function assembledPrompt(text, picksByCat){
   const flat = TABS.flatMap(cat => picksByCat[cat]);
   const on = flat.join(', ');
