@@ -318,10 +318,27 @@ function Editor({ data, onClose }){
         <div style={{height:12}} />
         <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
 
-        <div className="sideTitle">Typography</div>
+       <div className="sideTitle">Typography</div>
 
-{/* Row 1: Title color + Artist color + Font family */}
-<div className="row2 mt8" style={{gap:12}}>
+{/* Row 1: Font family full width */}
+<select
+  className="control mt8"
+  value={font}
+  onChange={e=>setFont(e.target.value)}
+>
+  {FONTS.map(f => (
+    <option
+      key={f.css}
+      value={f.css}
+      style={{ fontFamily:`"${f.css}", sans-serif` }}
+    >
+      {f.label}
+    </option>
+  ))}
+</select>
+
+{/* Row 2: Colours + Font size */}
+<div className="row mt8" style={{gap:12}}>
   <div className="rowColors">
     <div className="colorSwatch">
       <input
@@ -345,48 +362,27 @@ function Editor({ data, onClose }){
 
   <select
     className="control"
-    value={font}
-    onChange={e=>setFont(e.target.value)}
+    style={{flex:1}}
+    value={size}
+    onChange={e=>setSize(parseInt(e.target.value,10))}
+    aria-label="Font size"
   >
-    {FONTS.map(f => (
-      <option
-        key={f.css}
-        value={f.css}
-        style={{ fontFamily:`"${f.css}", sans-serif` }}
-      >
-        {f.label}
-      </option>
+    {FONT_SIZES.map(opt => (
+      <option key={opt.value} value={opt.value}>{opt.label}</option>
     ))}
   </select>
-
-
-{/* Row 2: Font size */}
-<select
-  className="control mt8"
-  value={size}
-  onChange={e=>setSize(parseInt(e.target.value,10))}
-  aria-label="Font size"
->
-  {[
-    {label:'Tiny', value:36},
-    {label:'X-Small', value:48},
-    {label:'Small', value:60},
-    {label:'Medium', value:80},
-    {label:'Large', value:100},
-    {label:'X-Large', value:120},
-    {label:'Huge', value:160}
-  ].map(opt => (
-    <option key={opt.value} value={opt.value}>{opt.label}</option>
-  ))}
-</select>
-
 </div>
 
-{/* Row 2: Alignment + Vertical position grouped */}
+{/* Row 3: Alignment options */}
 <div className="row" style={{marginTop:12, gap:12}}>
   <div className="row3" style={{flex:1}}>
     {['left','center','right'].map(a => (
-      <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)} aria-label={`Align ${a}`}>
+      <button
+        key={a}
+        className={'aln'+(a===align?' alnOn':'')}
+        onClick={()=>setAlign(a)}
+        aria-label={`Align ${a}`}
+      >
         {a==='left' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>)}
         {a==='center' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>)}
         {a==='right' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>)}
@@ -395,7 +391,12 @@ function Editor({ data, onClose }){
   </div>
   <div className="row3" style={{flex:1}}>
     {['top','middle','bottom'].map(p => (
-      <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)} aria-label={`Vertical ${p}`}>
+      <button
+        key={p}
+        className={'aln'+(p===vpos?' alnOn':'')}
+        onClick={()=>setVpos(p)}
+        aria-label={`Vertical ${p}`}
+      >
         {p==='top' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M8 9l4-4 4 4"/></svg>)}
         {p==='middle' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>)}
         {p==='bottom' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M8 15l4 4 4-4"/></svg>)}
@@ -408,6 +409,7 @@ function Editor({ data, onClose }){
 <button className="btn btnGradient btnBlock" onClick={downloadPNG}>
   Upscale & Download
 </button>
+
 </aside>
 </section>
 
