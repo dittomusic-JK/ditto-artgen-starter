@@ -375,11 +375,12 @@ function Editor({ data, onClose }){
 
 {/* Row 3: Alignment options */}
 <div className="row" style={{marginTop:12, gap:12}}>
-  <div className="row3" style={{flex:1}}>
+  {/* Horizontal align group */}
+  <div className="alnGroup">
     {['left','center','right'].map(a => (
       <button
         key={a}
-        className={'aln'+(a===align?' alnOn':'')}
+        className={a===align ? 'alnOn' : ''}
         onClick={()=>setAlign(a)}
         aria-label={`Align ${a}`}
       >
@@ -389,11 +390,13 @@ function Editor({ data, onClose }){
       </button>
     ))}
   </div>
-  <div className="row3" style={{flex:1}}>
+
+  {/* Vertical align group */}
+  <div className="alnGroup">
     {['top','middle','bottom'].map(p => (
       <button
         key={p}
-        className={'aln'+(p===vpos?' alnOn':'')}
+        className={p===vpos ? 'alnOn' : ''}
         onClick={()=>setVpos(p)}
         aria-label={`Vertical ${p}`}
       >
@@ -404,6 +407,7 @@ function Editor({ data, onClose }){
     ))}
   </div>
 </div>
+
 
 <div style={{height:16}} />
 <button className="btn btnGradient btnBlock" onClick={downloadPNG}>
