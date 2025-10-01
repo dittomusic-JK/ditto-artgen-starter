@@ -104,18 +104,22 @@ body {
   aspect-ratio:1/1;
   margin:0 auto;
   border-radius:8px;
-  overflow:hidden;
   background:#fff;
   box-shadow:0 8px 24px rgba(0,0,0,.04);
 }
 .safe{ position:absolute; inset:5%; border:1px dashed rgba(16,31,60,.15); border-radius:8px; pointer-events:none; }
 
+.canvas {
+  border-radius:8px;
+  overflow:hidden; /* clip just the artwork instead */
+}
+
 /* close/back */
 /* Close button anchored to the preview's top-right */
 .closeBtn{
   position:absolute;
-  top:-12px;
-  right:-12px;
+  top:-32px;
+  right:-32px;
   width:36px; height:36px;
   border-radius:999px;
   background:#fff;
