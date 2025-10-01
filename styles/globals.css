@@ -199,3 +199,10 @@ body {
   gap:8px;
   align-items:center;
 }
+.control,
+.miniSelect {
+  padding-right: 32px; /* add breathing room for arrow */
+  background-position: right 12px center; /* shift arrow inwards */
+  background-repeat: no-repeat;
+  background-size: 12px auto;
+}
