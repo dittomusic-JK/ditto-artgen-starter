@@ -28,7 +28,7 @@ body {
 
 /* prompt row */
 .promptGrid{ display:grid; grid-template-columns:1fr auto; gap:16px; }
-.input{ font:400 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+.input{ font:400 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border-radius:12px; background:#fff; }
 
 /* buttons */
 .btn{ border:0; cursor:pointer; border-radius:100px; padding:16px 32px; color:#fff; background:var(--ink); font:600 16px/16px "Poppins"; }
