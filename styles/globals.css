@@ -122,7 +122,40 @@ body {
 }
 
 /* sidebar */
-.rightcol{ width:360px; }
+/* Fixed full-height sidebar on the right */
+.rightcol{
+  width:360px;
+  position:fixed;
+  right:0;
+  top:0;
+  height:100vh;
+  background:#fff;
+  border-left:1px solid var(--border);
+  padding:96px 24px 24px; /* top padding ≈ aligns with header title baseline */
+  overflow-y:auto;
+  box-sizing:border-box;
+}
+
+/* Main area should not slip under the fixed sidebar */
+.editor{
+  position:relative;
+  margin-top:24px;
+  margin-right:360px;      /* reserve space for the fixed sidebar */
+  display:block;           /* single column now */
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width:1024px){
+  .rightcol{
+    position:static;
+    height:auto;
+    padding:16px 24px 24px;
+  }
+  .editor{
+    margin-right:0;
+  }
+}
+
 .sideTitle{ font:700 16px/24px "Poppins", sans-serif; margin:16px 0 8px; }
 .sideBox{ border:1px solid var(--border); border-radius:8px; padding:16px; color:var(--muted); white-space:pre-wrap; background:#fff; }
 
