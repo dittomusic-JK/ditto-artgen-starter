@@ -358,7 +358,7 @@ function Editor({ data, onClose }){
       </option>
     ))}
   </select>
-</div>
+
 
 {/* Row 2: Font size */}
 <select
