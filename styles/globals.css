@@ -178,3 +178,8 @@ body {
   border-color: var(--purple);
 }
 
+.rowColors {
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
