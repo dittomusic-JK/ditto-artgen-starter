@@ -14,26 +14,22 @@ const FONTS = [
   {label:'Space Grotesk', css:'Space Grotesk'}
 ];
 
+const FONT_SIZES = [
+  { label: "Tiny", value: 32 },
+  { label: "X-Small", value: 48 },
+  { label: "Small", value: 72 },
+  { label: "Medium", value: 96 },
+  { label: "Large", value: 128 },
+  { label: "X-Large", value: 160 },
+  { label: "Huge", value: 200 }
+];
+
 const TABS = ['genre', 'mood', 'style', 'texture'];
 const PROMPTS = {
-  genre: [
-    'Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave',
-    'Afrobeats','Metalcore','Neo-Soul',
-    'R&B / Soul','Punk Rock','Folk / Acoustic','Trap','Jazz Fusion','Reggaeton',
-    'Country / Americana','Grunge','House / Techno','Gospel / Spiritual','Drill'
-  ],
-  mood: [
-    'Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive','Mellow','Epic / Cinematic',
-    'Melancholic','Euphoric','Raw / Unpolished','Hopeful','Haunting','Introspective','Rebellious','Playful','Futuristic','Romantic','Chill / Relaxed'
-  ],
-  style: [
-    'Photographic','Illustration','Collage','Vaporwave','Minimal','Oil Paint','3D Render','Graffiti',
-    'Surrealism','Abstract Shapes','Anime / Manga Inspired','Retro Comic Book','Psychedelic','Ink Sketch / Line Art','Watercolor','Stencil / Street Art','Cyberpunk','Retro Futurism','Mixed Media'
-  ],
-  texture: [
-    'Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W',
-    'VHS Static','Paper Collage / Cutout','Torn Paper','Spray Paint / Airbrush','Metallic / Chrome','Velvet / Fabric Grain','Photocopy / Zine Print','Motion Blur','Pixelated / 8-bit','Holographic / Iridescent','Smoke / Mist Overlay'
-  ]
+  genre: ['Hip Hop','Indie Rock','EDM','Lo-Fi','Afrobeat','Pop','Indie Pop','Synthwave','Afrobeats','Metalcore','Neo-Soul'],
+  mood: ['Dreamy','Dark & Moody','Energetic','Nostalgic','Uplifting','Aggressive','Mellow','Epic / Cinematic'],
+  style: ['Photographic','Illustration','Collage','Vaporwave','Minimal','Oil Paint','3D Render','Graffiti'],
+  texture: ['Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W']
 };
 
 function assembledPrompt(text, picksByCat){
@@ -60,7 +56,6 @@ export default function Home(){
   const [activeTab, setActiveTab] = useState('genre');
   const [picks,setPicks] = useState({ genre:[], mood:[], style:[], texture:[] });
   const [images,setImages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [selected,setSelected] = useState(null);
 
   const toggle = (value) => {
@@ -73,8 +68,7 @@ export default function Home(){
 
   async function onGenerate(){
     try {
-      setIsLoading(true);
-      setImages([]); // clear
+      setImages([]); 
       const resp = await fetch('/api/generate', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -85,8 +79,6 @@ export default function Home(){
       setImages(data.images || []);
     } catch (e) {
       alert(e.message || 'Something went wrong generating images.');
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -114,7 +106,6 @@ export default function Home(){
 
             <div className="mtXL" />
 
-            {/* Tabs */}
             <div className="row" style={{gap:16, alignItems:'flex-end'}}>
               <div style={{font:'700 16px/24px "IBM Plex Mono", ui-monospace'}}>Add Prompts:</div>
               <div className="tabs">
@@ -135,7 +126,6 @@ export default function Home(){
               </div>
             </div>
 
-            {/* Pills for active tab */}
             <div className="pills">
               {PROMPTS[activeTab].map(v => (
                 <div
@@ -148,14 +138,7 @@ export default function Home(){
               ))}
             </div>
 
-            {/* Loading or results */}
-            {isLoading && (
-              <div className="loadingWrap">
-                <div className="spinner" />
-              </div>
-            )}
-
-            {!isLoading && images.length>0 && (
+            {images.length>0 && (
               <section className="mtL">
                 <div style={{font:'600 20px/30px Poppins', margin:'16px 0'}}>Today</div>
                 <div className="grid">
@@ -185,68 +168,38 @@ export default function Home(){
 }
 
 function Editor({ data, onClose }){
-  const W = 900, H = 900, SAFE = 0.05; // 5% inset
+  const W = 900, H = 900, SAFE = 0.10;
   const canvasRef = useRef(null);
   const [img, setImg] = useState(null);
 
-  // Typography state
-  const [title, setTitle]   = useState('');
-  const [artist, setArtist] = useState('');
-  const [font, setFont]     = useState(FONTS[0].css);
+  const [artist,setArtist] = useState('');
+  const [title,setTitle]   = useState('');
+  const [font,setFont]     = useState(FONTS[0].css);
+  const [size,setSize]     = useState(96); // shared size preset
+  const [titleColor,setTitleColor]   = useState('#0F1222');
+  const [artistColor,setArtistColor] = useState('#0F1222');
+  const [align,setAlign]   = useState('center');
+  const [vpos,setVpos]     = useState('bottom');
 
-  const [titleColor, setTitleColor]   = useState('#0F1222');
-  const [artistColor, setArtistColor] = useState('#0F1222');
-
-  const [titleSize, setTitleSize]   = useState(120);
-  const [artistSize, setArtistSize] = useState(72);
-
-  const [align, setAlign] = useState('center');   // left|center|right
-  const [vpos, setVpos]   = useState('bottom');   // top|middle|bottom
-
-  // Load image with CORS + proxy fallback so export isn't tainted
   useEffect(()=>{
-    let stopped = false;
-    async function load(){
-      try {
-        let src = data.src;
-        if (!src.startsWith('data:')) {
-          const testImg = new Image();
-          testImg.crossOrigin = 'anonymous';
-          const direct = await new Promise((resolve, reject)=>{
-            testImg.onload = ()=>resolve({ok:true});
-            testImg.onerror = ()=>reject(new Error('direct-load-failed'));
-            testImg.src = src + (src.includes('?') ? '&' : '?') + 'corsfix=' + Date.now();
-          }).catch(()=>({ok:false}));
-
-          if (!direct?.ok) {
-            const resp = await fetch(`/api/proxy-image?url=${encodeURIComponent(src)}`);
-            const json = await resp.json();
-            if (!resp.ok || !json?.dataUrl) throw new Error('proxy-failed');
-            src = json.dataUrl;
-          }
-        }
-        const i = new Image();
-        i.crossOrigin = 'anonymous';
-        i.onload = ()=>{ if(!stopped) setImg(i); };
-        i.src = src;
-      } catch(e){
-        console.error('Image load error', e);
-        alert('Could not load the image for export. Try generating again.');
-      }
-    }
-    load();
-    return ()=>{ stopped = true; }
+    const i = new Image();
+    i.crossOrigin = "anonymous";
+    i.onload = ()=> setImg(i);
+    i.src = data.src;
   },[data.src]);
 
-  // Draw preview
   useEffect(()=>{
     if(!canvasRef.current || !img) return;
     const ctx = canvasRef.current.getContext('2d');
     ctx.clearRect(0,0,W,H);
     ctx.drawImage(img,0,0,W,H);
+
+    const titleSize = size;
+    const artistSize = Math.round(size * 0.6);
+
     ctx.textBaseline = 'top';
 
-    // Title
+    // TITLE
     ctx.fillStyle = titleColor;
     ctx.font = `${titleSize}px "${font}"`;
     const titleW = ctx.measureText(title).width;
@@ -256,7 +209,7 @@ function Editor({ data, onClose }){
     if(align==='right')  textXTitle = sx + (sw - titleW);
     if (title) ctx.fillText(title, textXTitle, ty);
 
-    // Artist
+    // ARTIST
     if (artist){
       ctx.fillStyle = artistColor;
       ctx.font = `${artistSize}px "${font}"`;
@@ -267,61 +220,56 @@ function Editor({ data, onClose }){
       const ay = (vpos==='bottom') ? (ty + artistSize*1.2*1.6) : (ty + artistSize*1.2*1.2);
       ctx.fillText(artist, ax, ay);
     }
-  },[img, title, artist, font, titleSize, artistSize, titleColor, artistColor, align, vpos]);
+  },[img, artist, title, font, size, titleColor, artistColor, align, vpos]);
 
-  // Export 3000x3000 PNG
   async function downloadPNG(){
-    try{
-      if (document.fonts?.ready) await document.fonts.ready;
-      const OUT = 3000;
-      const out = document.createElement('canvas');
-      out.width = OUT; out.height = OUT;
-      const ctx = out.getContext('2d');
+    const OUT = 3000;
+    const out = document.createElement('canvas');
+    out.width = OUT; out.height = OUT;
+    const ctx = out.getContext('2d');
 
-      ctx.drawImage(img,0,0,OUT,OUT);
-      ctx.textBaseline = 'top';
+    ctx.drawImage(img, 0, 0, OUT, OUT);
 
-      // Title (scale from preview)
-      const bigTitle = Math.round(titleSize * (OUT/W));
-      ctx.fillStyle = titleColor;
-      ctx.font = `${bigTitle}px "${font}"`;
-      const titleW = ctx.measureText(title).width;
-      const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH:bigTitle*1.1, isTitle:true});
-      let textXTitle = tx;
-      if(align==='center') textXTitle = sx + (sw - titleW)/2;
-      if(align==='right')  textXTitle = sx + (sw - titleW);
-      if (title) ctx.fillText(title, textXTitle, ty);
+    const titleSizeBig = Math.round(size * (OUT/W));
+    const artistSizeBig = Math.round(size * 0.6 * (OUT/W));
 
-      // Artist
-      if (artist){
-        const bigArtist = Math.round(artistSize * (OUT/W));
-        ctx.fillStyle = artistColor;
-        ctx.font = `${bigArtist}px "${font}"`;
-        const aW = ctx.measureText(artist).width;
-        let ax = sx;
-        if(align==='center') ax = sx + (sw - aW)/2;
-        if(align==='right')  ax = sx + (sw - aW);
-        const ay = (vpos==='bottom') ? (ty + bigArtist*1.2*1.6) : (ty + bigArtist*1.2*1.2);
-        ctx.fillText(artist, ax, ay);
-      }
+    ctx.textBaseline = 'top';
 
-      out.toBlob((blob)=>{
-        if(!blob) return alert('Could not export. Check the console for details.');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'ditto-cover-3000.png';
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
-    }catch(err){
-      console.error(err);
-      alert('Could not export. Check the console for details.');
+    // TITLE
+    ctx.fillStyle = titleColor;
+    ctx.font = `${titleSizeBig}px "${font}"`;
+    const titleW = ctx.measureText(title).width;
+    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH:titleSizeBig*1.1, isTitle:true});
+    let textXTitle = tx;
+    if(align==='center') textXTitle = sx + (sw - titleW)/2;
+    if(align==='right')  textXTitle = sx + (sw - titleW);
+    if (title) ctx.fillText(title, textXTitle, ty);
+
+    // ARTIST
+    if (artist){
+      ctx.fillStyle = artistColor;
+      ctx.font = `${artistSizeBig}px "${font}"`;
+      const aW = ctx.measureText(artist).width;
+      let ax = sx;
+      if(align==='center') ax = sx + (sw - aW)/2;
+      if(align==='right')  ax = sx + (sw - aW);
+      const ay = (vpos==='bottom') ? (ty + artistSizeBig*1.2*1.6) : (ty + artistSizeBig*1.2*1.2);
+      ctx.fillText(artist, ax, ay);
     }
+
+    out.toBlob((blob) => {
+      if (!blob) return alert('Export failed.');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ditto-cover-3000.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
   }
 
   return (
     <section className="editor">
-      {/* Close/back */}
       <button className="closeBtn" onClick={onClose} aria-label="Close editor and go back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 6L6 18M6 6l12 12"/>
@@ -343,57 +291,41 @@ function Editor({ data, onClose }){
         <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
 
         <div className="sideTitle">Typography</div>
-
-        {/* Font family with live preview */}
         <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
-          {FONTS.map(f => (
-            <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
-              {f.label}
-            </option>
-          ))}
+          {FONTS.map(f => <option key={f.css} value={f.css} style={{fontFamily:`"${f.css}", sans-serif`}}>{f.label}</option>)}
         </select>
 
-        {/* Two colors + two sizes in one section */}
+        {/* Two colours + one size */}
         <div className="grid4 mt8">
-          {/* Title color + size */}
           <div className="colorSwatch">
-            <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} aria-label="Title color"/>
+            <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} aria-label="Title colour"/>
           </div>
-          <select className="miniSelect" value={titleSize} onChange={e=>setTitleSize(parseInt(e.target.value,10))} aria-label="Title size">
-            {[64,72,84,96,112,128,144,160].map(s => <option key={s} value={s}>{s}pt</option>)}
+          <select className="miniSelect" value={size} onChange={e=>setSize(parseInt(e.target.value,10))} aria-label="Font size">
+            {FONT_SIZES.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
-
-          {/* Artist color + size */}
           <div className="colorSwatch">
-            <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} aria-label="Artist color"/>
+            <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} aria-label="Artist colour"/>
           </div>
-          <select className="miniSelect" value={artistSize} onChange={e=>setArtistSize(parseInt(e.target.value,10))} aria-label="Artist size">
-            {[36,42,48,54,60,66,72,80].map(s => <option key={s} value={s}>{s}pt</option>)}
-          </select>
+          <div />
         </div>
 
-        {/* Alignment + Vertical position icons */}
         <div className="row3" style={{marginTop:12}}>
           {['left','center','right'].map(a => (
-            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)} aria-label={`Align ${a}`}>
-              {a==='left' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>)}
-              {a==='center' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>)}
-              {a==='right' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>)}
+            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)}>
+              {a}
             </button>
           ))}
           {['top','middle','bottom'].map(p => (
-            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)} aria-label={`Vertical ${p}`}>
-              {p==='top' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M8 9l4-4 4 4"/></svg>)}
-              {p==='middle' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>)}
-              {p==='bottom' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M8 15l4 4 4-4"/></svg>)}
+            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)}>
+              {p}
             </button>
           ))}
         </div>
 
         <div style={{height:16}} />
-        <button className="btn btnPrimary btnBlock btnGradient" onClick={downloadPNG}>
-          Upscale & Download
-        </button>
+        <button className="btn btnGradient btnBlock" onClick={downloadPNG}>Upscale & Download</button>
       </aside>
     </section>
   )
