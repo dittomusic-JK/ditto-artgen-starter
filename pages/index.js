@@ -327,33 +327,57 @@ function Editor({ data, onClose }){
           ))}
         </select>
 
-        {/* Two colours + shared size */}
-        <div className="grid4 mt8">
-          <div className="colorSwatch">
-            <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} aria-label="Title colour"/>
-          </div>
-          <select className="miniSelect" value={size} onChange={e=>setSize(parseInt(e.target.value,10))} aria-label="Font size">
-            {FONT_SIZES.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-          <div className="colorSwatch">
-            <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} aria-label="Artist colour"/>
-          </div>
-          <div />
-        </div>
+       {/* Row 1: Title color, Artist color, Font size */}
+<div className="row3 mt8">
+  <div className="colorSwatch">
+    <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} aria-label="Title colour"/>
+  </div>
+  <div className="colorSwatch">
+    <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} aria-label="Artist colour"/>
+  </div>
+  <select className="miniSelect" value={size} onChange={e=>setSize(parseInt(e.target.value,10))} aria-label="Font size">
+    {[
+      {label:'Tiny', value:36},
+      {label:'X-Small', value:48},
+      {label:'Small', value:60},
+      {label:'Medium', value:80},
+      {label:'Large', value:100},
+      {label:'X-Large', value:120},
+      {label:'Huge', value:160}
+    ].map(opt => (
+      <option key={opt.value} value={opt.value}>{opt.label}</option>
+    ))}
+  </select>
+</div>
 
-        {/* Alignment controls */}
-        <div className="row3" style={{marginTop:12}}>
-          {['left','center','right'].map(a => (
-            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)}>{a}</button>
-          ))}
-          {['top','middle','bottom'].map(p => (
-            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)}>{p}</button>
-          ))}
-        </div>
+{/* Row 2: Alignment + Vertical position grouped */}
+<div className="row" style={{marginTop:12, gap:12}}>
+  <div className="row3" style={{flex:1}}>
+    {['left','center','right'].map(a => (
+      <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)} aria-label={`Align ${a}`}>
+        {a==='left' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>)}
+        {a==='center' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>)}
+        {a==='right' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>)}
+      </button>
+    ))}
+  </div>
+  <div className="row3" style={{flex:1}}>
+    {['top','middle','bottom'].map(p => (
+      <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)} aria-label={`Vertical ${p}`}>
+        {p==='top' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M8 9l4-4 4 4"/></svg>)}
+        {p==='middle' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>)}
+        {p==='bottom' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M8 15l4 4 4-4"/></svg>)}
+      </button>
+    ))}
+  </div>
+</div>
 
-        <div style={{height:16}} />
-        <button className="btn btnGradient btnBlock" onClick={downloadPNG}>Upscale & Download</button>
-      </aside>
-    </section>
+<div style={{height:16}} />
+<button className="btn btnGradient btnBlock" onClick={downloadPNG}>
+  Upscale & Download
+</button>
+</aside>
+</section>
+
   )
 }
