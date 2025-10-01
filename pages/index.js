@@ -341,24 +341,40 @@ function Editor({ data, onClose }){
         <div style={{height:12}} />
         <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
 
-       <div className="sideTitle">Typography</div>
+      <div className="sideTitle">Typography</div>
 
-{/* Row 1: Font family full width */}
+{/* Row 1: Title color + Artist color + Font family */}
+<div className="row2 mt8" style={{gap:12}}>
+  <div className="rowColors">
+    <div className="colorSwatch">
+      <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} />
+    </div>
+    <div className="colorSwatch">
+      <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} />
+    </div>
+  </div>
+
+  <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
+    {FONTS.map(f => (
+      <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
+        {f.label}
+      </option>
+    ))}
+  </select>
+</div>
+
+{/* Row 2: Font size */}
 <select
   className="control mt8"
-  value={font}
-  onChange={e=>setFont(e.target.value)}
+  value={size}
+  onChange={e=>setSize(parseInt(e.target.value,10))}
+  aria-label="Font size"
 >
-  {FONTS.map(f => (
-    <option
-      key={f.css}
-      value={f.css}
-      style={{ fontFamily:`"${f.css}", sans-serif` }}
-    >
-      {f.label}
-    </option>
+  {FONT_SIZES.map(opt => (
+    <option key={opt.value} value={opt.value}>{opt.label}</option>
   ))}
 </select>
+
 
 {/* Row 2: Colours + Font size */}
 <div className="row mt8" style={{gap:12}}>
