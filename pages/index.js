@@ -22,6 +22,18 @@ const PROMPTS = {
   texture: ['Grainy Film','Clean Digital','Distressed','Neon Glow','Pastel','High Contrast B&W']
 };
 
+const COLOR_PRESETS = [
+  { name: 'White',  hex:'#FFFFFF' },
+  { name: 'Black',  hex:'#0F1222' },
+  { name: 'Ditto Purple', hex:'#5F1FFF' },
+  { name: 'Electric Blue', hex:'#0400FF' },
+  { name: 'Magenta', hex:'#FF00FF' },
+  { name: 'Sun', hex:'#FFD84D' }
+];
+
+const TITLE_SIZE_OPTS = [64, 72, 84, 96, 112, 128, 144, 160];
+const ARTIST_SIZE_OPTS = [36, 42, 48, 54, 60, 66, 72, 80];
+
 function assembledPrompt(text, picksByCat){
   const flat = TABS.flatMap(cat => picksByCat[cat]);
   const on = flat.join(', ');
@@ -66,6 +78,7 @@ export default function Home(){
   const [activeTab, setActiveTab] = useState('genre');
   const [picks,setPicks] = useState({ genre:[], mood:[], style:[], texture:[] });
   const [images,setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [selected,setSelected] = useState(null);
 
   const toggle = (value) => {
@@ -77,22 +90,23 @@ export default function Home(){
   };
 
   async function onGenerate(){
-  try {
-    setImages([]); // clear
-    // Optional: you can show a loading message/spinner in state if you want
-    const resp = await fetch('/api/generate', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ prompt, pills: picks })
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data?.error || 'Generation failed');
-    setImages(data.images || []);
-  } catch (e) {
-    alert(e.message || 'Something went wrong generating images.');
+    try {
+      setIsLoading(true);
+      setImages([]);
+      const resp = await fetch('/api/generate', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ prompt, pills: picks })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || 'Generation failed');
+      setImages(data.images || []);
+    } catch (e) {
+      alert(e.message || 'Something went wrong generating images.');
+    } finally {
+      setIsLoading(false);
+    }
   }
-}
-
 
   return (
     <>
@@ -116,7 +130,6 @@ export default function Home(){
               </div>
             </section>
 
-            {/* ↑ MORE VERTICAL PADDING BEFORE TABS */}
             <div className="mtXL" />
 
             {/* Tabs */}
@@ -153,7 +166,14 @@ export default function Home(){
               ))}
             </div>
 
-            {images.length>0 && (
+            {/* Loading or results */}
+            {isLoading && (
+              <div className="loadingWrap">
+                <div className="spinner" />
+              </div>
+            )}
+
+            {!isLoading && images.length>0 && (
               <section className="mtL">
                 <div style={{font:'600 20px/30px Poppins', margin:'16px 0'}}>Today</div>
                 <div className="grid">
@@ -187,57 +207,57 @@ function Editor({ data, onClose }){
   const canvasRef = useRef(null);
   const [img, setImg] = useState(null);
 
-  const [artist,setArtist] = useState('');
+  // separate styling for Title & Artist
   const [title,setTitle]   = useState('');
+  const [artist,setArtist] = useState('');
   const [font,setFont]     = useState(FONTS[0].css);
-  const [size,setSize]     = useState(120);
-  const [color,setColor]   = useState('#0F1222');
+
+  const [titleColor,setTitleColor]   = useState('#0F1222');
+  const [artistColor,setArtistColor] = useState('#0F1222');
+  const [titleSize,setTitleSize]     = useState(120);
+  const [artistSize,setArtistSize]   = useState(72);
+
   const [align,setAlign]   = useState('center'); // left|center|right
   const [vpos,setVpos]     = useState('bottom'); // top|middle|bottom
 
-// load image with CORS + proxy fallback
-useEffect(()=>{
-  let stopped = false;
+  // load image with CORS + proxy fallback (so export works)
+  useEffect(()=>{
+    let stopped = false;
+    async function load(){
+      try {
+        let src = data.src;
+        if (!src.startsWith('data:')) {
+          // Try direct CORS load
+          const testImg = new Image();
+          testImg.crossOrigin = 'anonymous';
+          const direct = await new Promise((resolve, reject)=>{
+            testImg.onload = ()=>resolve({ok:true, img:testImg});
+            testImg.onerror = ()=>reject(new Error('direct-load-failed'));
+            testImg.src = src + (src.includes('?') ? '&' : '?') + 'corsfix=' + Date.now();
+          }).catch(()=>({ok:false}));
 
-  async function load(){
-    try {
-      let src = data.src;
-
-      // If not a data URL, try CORS first. If that still taints, we’ll proxy.
-      if (!src.startsWith('data:')) {
-        // Try direct CORS load
-        const testImg = new Image();
-        testImg.crossOrigin = 'anonymous';
-        const direct = await new Promise((resolve, reject)=>{
-          testImg.onload = ()=>resolve({ok:true, img:testImg});
-          testImg.onerror = ()=>reject(new Error('direct-load-failed'));
-          testImg.src = src + (src.includes('?') ? '&' : '?') + 'corsfix=' + Date.now();
-        }).catch(()=>({ok:false}));
-
-        if (!direct?.ok) {
-          // Use proxy → returns data URL
-          const resp = await fetch(`/api/proxy-image?url=${encodeURIComponent(src)}`);
-          const json = await resp.json();
-          if (!resp.ok || !json?.dataUrl) throw new Error('proxy-failed');
-          src = json.dataUrl;
+          if (!direct?.ok) {
+            // Proxy → returns data URL
+            const resp = await fetch(`/api/proxy-image?url=${encodeURIComponent(src)}`);
+            const json = await resp.json();
+            if (!resp.ok || !json?.dataUrl) throw new Error('proxy-failed');
+            src = json.dataUrl;
+          }
         }
+
+        const i = new Image();
+        i.crossOrigin = 'anonymous';
+        i.onload = ()=>{ if(!stopped) setImg(i); };
+        i.onerror = ()=>{ console.warn('image load failed'); };
+        i.src = src;
+      } catch (e) {
+        console.error('Image load error', e);
+        alert('Could not load the image for export. Try generating again.');
       }
-
-      const i = new Image();
-      i.crossOrigin = 'anonymous';
-      i.onload = ()=>{ if(!stopped) setImg(i); };
-      i.onerror = ()=>{ console.warn('image load failed'); };
-      i.src = src;
-    } catch (e) {
-      console.error('Image load error', e);
-      alert('Could not load the image for export. Try generating again.');
     }
-  }
-
-  load();
-  return ()=>{ stopped = true; }
-},[data.src]);
-
+    load();
+    return ()=>{ stopped = true; }
+  },[data.src]);
 
   // draw preview
   useEffect(()=>{
@@ -246,32 +266,31 @@ useEffect(()=>{
     ctx.clearRect(0,0,W,H);
     ctx.drawImage(img,0,0,W,H);
 
-    const lineH = size*1.1;
     ctx.textBaseline = 'top';
-    ctx.fillStyle = color;
 
     // TITLE
-    ctx.font = `${size}px "${font}"`;
+    ctx.fillStyle = titleColor;
+    ctx.font = `${titleSize}px "${font}"`;
     const titleW = ctx.measureText(title).width;
-    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH, isTitle:true});
+    const {x:tx,y:ty,sx,sy,sw} = computeXY({align, vpos, W, H, inset:SAFE, textW:titleW, lineH:titleSize*1.1, isTitle:true});
     let textXTitle = tx;
     if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
     if(align==='right'){  textXTitle = sx + (sw - titleW);  }
     if (title) ctx.fillText(title, textXTitle, ty);
 
-    // ARTIST
+    // ARTIST (beneath title, using artist controls)
     if (artist){
-      const aSize = Math.round(size*0.6);
+      ctx.fillStyle = artistColor;
+      const aSize = Math.round(artistSize);
       ctx.font = `${aSize}px "${font}"`;
-      const newLineH = aSize*1.2;
       const aW = ctx.measureText(artist).width;
       let ax = sx;
       if(align==='center') ax = sx + (sw - aW)/2;
       if(align==='right')  ax = sx + (sw - aW);
-      const ay = (vpos==='bottom') ? (ty + newLineH*1.6) : (ty + newLineH*1.2);
+      const ay = (vpos==='bottom') ? (ty + aSize*1.2*1.6) : (ty + aSize*1.2*1.2);
       ctx.fillText(artist, ax, ay);
     }
-  },[img, artist, title, font, size, color, align, vpos]);
+  },[img, title, artist, font, titleSize, artistSize, titleColor, artistColor, align, vpos]);
 
   // robust export at 3000x3000
   async function downloadPNG(){
@@ -288,17 +307,17 @@ useEffect(()=>{
 
       // scale preview->export
       const scale = OUT / W;
-      const bigSize = Math.round(size * scale);
+      const bigTitleSize  = Math.round(titleSize * scale);
+      const bigArtistSize = Math.round(artistSize * scale);
 
       ctx.textBaseline = 'top';
-      ctx.fillStyle = color;
 
       // TITLE
-      ctx.font = `${bigSize}px "${font}"`;
-      const lineH = bigSize*1.1;
+      ctx.fillStyle = titleColor;
+      ctx.font = `${bigTitleSize}px "${font}"`;
       const titleW = ctx.measureText(title).width;
       const {x:tx,y:ty,sx,sy,sw} = computeXY({
-        align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH, isTitle:true
+        align, vpos, W:OUT, H:OUT, inset:SAFE, textW:titleW, lineH:bigTitleSize*1.1, isTitle:true
       });
       let textXTitle = tx;
       if(align==='center'){ textXTitle = sx + (sw - titleW)/2; }
@@ -307,19 +326,18 @@ useEffect(()=>{
 
       // ARTIST
       if (artist){
-        const aSize = Math.round(bigSize*0.6);
-        ctx.font = `${aSize}px "${font}"`;
-        const newLineH = aSize*1.2;
+        ctx.fillStyle = artistColor;
+        ctx.font = `${bigArtistSize}px "${font}"`;
         const aW = ctx.measureText(artist).width;
         let ax = sx;
         if(align==='center') ax = sx + (sw - aW)/2;
         if(align==='right')  ax = sx + (sw - aW);
-        const ay = (vpos==='bottom') ? (ty + newLineH*1.6) : (ty + newLineH*1.2);
+        const ay = (vpos==='bottom') ? (ty + bigArtistSize*1.2*1.6) : (ty + bigArtistSize*1.2*1.2);
         ctx.fillText(artist, ax, ay);
       }
 
       out.toBlob((blob)=>{
-        if(!blob) return alert('Export failed.');
+        if(!blob) return alert('Could not export. Check the console for details.');
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -337,7 +355,7 @@ useEffect(()=>{
 
   return (
     <section className="editor">
-      {/* Close/back button anchored above top-right */}
+      {/* Close/back button */}
       <button className="closeBtn" onClick={onClose} aria-label="Close editor and go back">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 6L6 18M6 6l12 12"/>
@@ -353,42 +371,50 @@ useEffect(()=>{
         <div className="sideTitle">Text Prompt:</div>
         <div className="sideBox">{data.prompt || '—'}</div>
 
-        <div className="sideTitle">Add Text:</div>
-        <input className="control" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
-        <div style={{height:12}} />
+        {/* Title controls */}
+        <div className="sideTitle">Release Title</div>
         <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
-
-        <div className="sideTitle">Typography</div>
-        <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
-          {FONTS.map(f => <option key={f.css} value={f.css}>{f.label}</option>)}
-        </select>
-
-        <div className="row2" style={{marginTop:12}}>
-          <input type="color" className="color control" value={color} onChange={e=>setColor(e.target.value)} />
-          <input type="number" min="24" max="300" step="2" className="control" value={size} onChange={e=>setSize(parseInt(e.target.value||'0',10))} />
+        <div className="colorRow" style={{marginTop:8}}>
+          <div className="colorSwatch">
+            <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} />
+          </div>
+          <select className="miniSelect" value={titleColor} onChange={e=>setTitleColor(e.target.value)}>
+            {COLOR_PRESETS.map(c => <option key={c.hex} value={c.hex}>{c.name}</option>)}
+          </select>
+        </div>
+        <div className="row2" style={{marginTop:8}}>
+          <select className="miniSelect" value={titleSize} onChange={e=>setTitleSize(parseInt(e.target.value,10))}>
+            {TITLE_SIZE_OPTS.map(s => <option key={s} value={s}>{s}pt</option>)}
+          </select>
+          <select className="miniSelect" value={font} onChange={e=>setFont(e.target.value)}>
+            {FONTS.map(f => <option key={f.css} value={f.css}>{f.label}</option>)}
+          </select>
         </div>
 
-        <div className="row3" style={{marginTop:12}}>
-          {['left','center','right'].map(a => (
-            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)} aria-label={`Align ${a}`}>
-              {a==='left' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>)}
-              {a==='center' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>)}
-              {a==='right' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>)}
-            </button>
-          ))}
-          {['top','middle','bottom'].map(p => (
-            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)} aria-label={`Vertical ${p}`}>
-              {p==='top' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M8 9l4-4 4 4"/></svg>)}
-              {p==='middle' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>)}
-              {p==='bottom' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M8 15l4 4 4-4"/></svg>)}
-            </button>
-          ))}
+        {/* Artist controls */}
+        <div className="sideTitle" style={{marginTop:16}}>Artist Name</div>
+        <input className="control" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
+        <div className="colorRow" style={{marginTop:8}}>
+          <div className="colorSwatch">
+            <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} />
+          </div>
+          <select className="miniSelect" value={artistColor} onChange={e=>setArtistColor(e.target.value)}>
+            {COLOR_PRESETS.map(c => <option key={c.hex} value={c.hex}>{c.name}</option>)}
+          </select>
+        </div>
+        <div className="row2" style={{marginTop:8}}>
+          <select className="miniSelect" value={artistSize} onChange={e=>setArtistSize(parseInt(e.target.value,10))}>
+            {ARTIST_SIZE_OPTS.map(s => <option key={s} value={s}>{s}pt</option>)}
+          </select>
+          {/* keep font dropdown in Title row to reduce clutter; duplicate here if you want independent fonts */}
+          <div />
         </div>
 
         <div style={{height:16}} />
-        <button className="btn btnPrimary" onClick={downloadPNG}>Upscale & Download</button>
+        <button className="btn btnPrimary btnBlock btnGradient" onClick={downloadPNG}>
+          Upscale & Download
+        </button>
       </aside>
     </section>
   )
 }
-
