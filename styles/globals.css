@@ -96,14 +96,7 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* editor layout */
-.editor{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 360px;
-  gap:32px;
-  align-items:start;
-  margin-top:24px;
-  position:relative;
-}
+
 .preview{
   position:relative;
   width:100%;
@@ -218,7 +211,7 @@ body {
 .alnGroup button {
   flex: 1;
   border: none;
-  background: ##f3f3ff;
+  background: #f3f3ff;
   color: var(--ink);
   padding: 6px;
   display: flex;
@@ -226,6 +219,7 @@ body {
   justify-content: center;
   cursor: pointer;
 }
+
 
 /* Divider between buttons */
 .alnGroup button + button {
