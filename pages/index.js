@@ -226,7 +226,6 @@ function Editor({ data, onClose }){
 
     const titleSize = size;
     const artistSize = Math.round(size*0.6);
-
     ctx.textBaseline = 'top';
 
     // Title
@@ -262,9 +261,9 @@ function Editor({ data, onClose }){
 
     const titleSizeBig = Math.round(size * (OUT/W));
     const artistSizeBig = Math.round(size*0.6 * (OUT/W));
-
     ctx.textBaseline = 'top';
 
+    // Title
     ctx.fillStyle = titleColor;
     ctx.font = `${titleSizeBig}px "${font}"`;
     const titleW = ctx.measureText(title).width;
@@ -274,6 +273,7 @@ function Editor({ data, onClose }){
     if(align==='right')  textXTitle = sx + (sw - titleW);
     if (title) ctx.fillText(title, textXTitle, ty);
 
+    // Artist
     if (artist){
       ctx.fillStyle = artistColor;
       ctx.font = `${artistSizeBig}px "${font}"`;
@@ -298,163 +298,125 @@ function Editor({ data, onClose }){
 
   return (
     <section className="editor">
-     
-<div className="preview">
-  <button
-    className="closeBtn"
-    onClick={onClose}
-    aria-label="Close editor and go back"
-  >
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M18 6L6 18M6 6l12 12" />
-    </svg>
-  </button>
-
-  <canvas ref={canvasRef} className="canvas" width={W} height={H} />
-  <div className="safe" />
-</div>
-
-
+      {/* Preview with close button */}
+      <div className="preview">
+        <button
+          className="closeBtn"
+          onClick={onClose}
+          aria-label="Close editor and go back"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
         <canvas ref={canvasRef} className="canvas" width={W} height={H} />
         <div className="safe" />
       </div>
 
+      {/* Sidebar */}
       <aside className="rightcol panel">
+        {/* Prompt (mono, small) */}
         <div style={{ 
-  font:'500 14px/20px "IBM Plex Mono", ui-monospace', 
-  color:'var(--sub)', 
-  margin:'8px 0 16px' 
-}}>
-  {data.prompt || '—'}
-</div>
-
+          font:'500 14px/20px "IBM Plex Mono", ui-monospace', 
+          color:'var(--sub)', 
+          margin:'8px 0 16px' 
+        }}>
+          {data.prompt || '—'}
+        </div>
 
         <div className="sideTitle">Add Text:</div>
         <input className="control" placeholder="Artist Name" value={artist} onChange={e=>setArtist(e.target.value)} />
         <div style={{height:12}} />
         <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
 
-      <div className="sideTitle">Typography</div>
+        <div className="sideTitle">Typography</div>
 
-{/* Row 1: Title color + Artist color + Font family */}
-<div className="row2 mt8" style={{gap:12}}>
-  <div className="rowColors">
-    <div className="colorSwatch">
-      <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} />
-    </div>
-    <div className="colorSwatch">
-      <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} />
-    </div>
-  </div>
+        {/* Row 1: Font family (full width) */}
+        <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
+          {FONTS.map(f => (
+            <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
+              {f.label}
+            </option>
+          ))}
+        </select>
 
-  <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
-    {FONTS.map(f => (
-      <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
-        {f.label}
-      </option>
-    ))}
-  </select>
-</div>
+        {/* Row 2: Colours (left) + Font size (fills rest) */}
+        <div className="row mt8" style={{gap:12}}>
+          <div className="rowColors">
+            <div className="colorSwatch">
+              <input
+                type="color"
+                className="colorInput"
+                value={titleColor}
+                onChange={e=>setTitleColor(e.target.value)}
+                aria-label="Title colour"
+              />
+            </div>
+            <div className="colorSwatch">
+              <input
+                type="color"
+                className="colorInput"
+                value={artistColor}
+                onChange={e=>setArtistColor(e.target.value)}
+                aria-label="Artist colour"
+              />
+            </div>
+          </div>
 
-{/* Row 2: Font size */}
-<select
-  className="control mt8"
-  value={size}
-  onChange={e=>setSize(parseInt(e.target.value,10))}
-  aria-label="Font size"
->
-  {FONT_SIZES.map(opt => (
-    <option key={opt.value} value={opt.value}>{opt.label}</option>
-  ))}
-</select>
+          <select
+            className="control"
+            style={{flex:1}}
+            value={size}
+            onChange={e=>setSize(parseInt(e.target.value,10))}
+            aria-label="Font size"
+          >
+            {FONT_SIZES.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
 
+        {/* Row 3: Alignment groups */}
+        <div className="row" style={{marginTop:12, gap:12}}>
+          {/* Horizontal */}
+          <div className="alnGroup">
+            {['left','center','right'].map(a => (
+              <button
+                key={a}
+                className={a===align ? 'alnOn' : ''}
+                onClick={()=>setAlign(a)}
+                aria-label={`Align ${a}`}
+              >
+                {a==='left' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>)}
+                {a==='center' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>)}
+                {a==='right' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>)}
+              </button>
+            ))}
+          </div>
 
-{/* Row 2: Colours + Font size */}
-<div className="row mt8" style={{gap:12}}>
-  <div className="rowColors">
-    <div className="colorSwatch">
-      <input
-        type="color"
-        className="colorInput"
-        value={titleColor}
-        onChange={e=>setTitleColor(e.target.value)}
-        aria-label="Title colour"
-      />
-    </div>
-    <div className="colorSwatch">
-      <input
-        type="color"
-        className="colorInput"
-        value={artistColor}
-        onChange={e=>setArtistColor(e.target.value)}
-        aria-label="Artist colour"
-      />
-    </div>
-  </div>
+          {/* Vertical */}
+          <div className="alnGroup">
+            {['top','middle','bottom'].map(p => (
+              <button
+                key={p}
+                className={p===vpos ? 'alnOn' : ''}
+                onClick={()=>setVpos(p)}
+                aria-label={`Vertical ${p}`}
+              >
+                {p==='top' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M8 9l4-4 4 4"/></svg>)}
+                {p==='middle' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>)}
+                {p==='bottom' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M8 15l4 4 4-4"/></svg>)}
+              </button>
+            ))}
+          </div>
+        </div>
 
-  <select
-    className="control"
-    style={{flex:1}}
-    value={size}
-    onChange={e=>setSize(parseInt(e.target.value,10))}
-    aria-label="Font size"
-  >
-    {FONT_SIZES.map(opt => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
-    ))}
-  </select>
-</div>
-
-{/* Row 3: Alignment options */}
-<div className="row" style={{marginTop:12, gap:12}}>
-  {/* Horizontal align group */}
-  <div className="alnGroup">
-    {['left','center','right'].map(a => (
-      <button
-        key={a}
-        className={a===align ? 'alnOn' : ''}
-        onClick={()=>setAlign(a)}
-        aria-label={`Align ${a}`}
-      >
-        {a==='left' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>)}
-        {a==='center' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>)}
-        {a==='right' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>)}
-      </button>
-    ))}
-  </div>
-
-  {/* Vertical align group */}
-  <div className="alnGroup">
-    {['top','middle','bottom'].map(p => (
-      <button
-        key={p}
-        className={p===vpos ? 'alnOn' : ''}
-        onClick={()=>setVpos(p)}
-        aria-label={`Vertical ${p}`}
-      >
-        {p==='top' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M8 9l4-4 4 4"/></svg>)}
-        {p==='middle' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M8 12l4-4 4 4M8 12l4 4 4-4"/></svg>)}
-        {p==='bottom' && (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M8 15l4 4 4-4"/></svg>)}
-      </button>
-    ))}
-  </div>
-</div>
-
-
-<div style={{height:16}} />
-<button className="btn btnGradient btnBlock" onClick={downloadPNG}>
-  Upscale & Download
-</button>
-
-</aside>
-</section>
-
+        <div style={{height:16}} />
+        <button className="btn btnGradient btnBlock" onClick={downloadPNG}>
+          Upscale & Download
+        </button>
+      </aside>
+    </section>
   )
 }
+
