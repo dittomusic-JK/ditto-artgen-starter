@@ -111,15 +111,20 @@ body {
 .safe{ position:absolute; inset:5%; border:1px dashed rgba(16,31,60,.15); border-radius:8px; pointer-events:none; }
 
 /* close/back */
+/* Close button anchored to the preview's top-right */
 .closeBtn{
   position:absolute;
-  top:-40px; right:-40px;
-  width:40px; height:40px; border-radius:999px;
-  background:#fff; border:1px solid var(--border);
+  top:-12px;
+  right:-12px;
+  width:36px; height:36px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid var(--border);
   box-shadow:0 6px 18px rgba(0,0,0,.06);
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
 }
+
 
 /* sidebar */
 /* Fixed full-height sidebar on the right */
