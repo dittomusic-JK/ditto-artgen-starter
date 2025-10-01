@@ -15,13 +15,13 @@ const FONTS = [
 ];
 
 const FONT_SIZES = [
-  { label: "Tiny", value: 32 },
-  { label: "X-Small", value: 48 },
-  { label: "Small", value: 72 },
-  { label: "Medium", value: 96 },
-  { label: "Large", value: 128 },
-  { label: "X-Large", value: 160 },
-  { label: "Huge", value: 200 }
+  { label: "Tiny", value: 48 },
+  { label: "X-Small", value: 64 },
+  { label: "Small", value: 84 },
+  { label: "Medium", value: 112 },
+  { label: "Large", value: 144 },
+  { label: "X-Large", value: 180 },
+  { label: "Huge", value: 220 }
 ];
 
 const TABS = ['genre', 'mood', 'style', 'texture'];
@@ -45,6 +45,7 @@ const PROMPTS = {
     'VHS Static','Paper Collage / Cutout','Torn Paper','Spray Paint / Airbrush','Metallic / Chrome','Velvet / Fabric Grain','Photocopy / Zine Print','Motion Blur','Pixelated / 8-bit','Holographic / Iridescent','Smoke / Mist Overlay'
   ]
 };
+
 function assembledPrompt(text, picksByCat){
   const flat = TABS.flatMap(cat => picksByCat[cat]);
   const on = flat.join(', ');
@@ -69,6 +70,7 @@ export default function Home(){
   const [activeTab, setActiveTab] = useState('genre');
   const [picks,setPicks] = useState({ genre:[], mood:[], style:[], texture:[] });
   const [images,setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [selected,setSelected] = useState(null);
 
   const toggle = (value) => {
@@ -81,7 +83,8 @@ export default function Home(){
 
   async function onGenerate(){
     try {
-      setImages([]); 
+      setIsLoading(true);
+      setImages([]);
       const resp = await fetch('/api/generate', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -92,6 +95,8 @@ export default function Home(){
       setImages(data.images || []);
     } catch (e) {
       alert(e.message || 'Something went wrong generating images.');
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -119,6 +124,7 @@ export default function Home(){
 
             <div className="mtXL" />
 
+            {/* Tabs */}
             <div className="row" style={{gap:16, alignItems:'flex-end'}}>
               <div style={{font:'700 16px/24px "IBM Plex Mono", ui-monospace'}}>Add Prompts:</div>
               <div className="tabs">
@@ -139,6 +145,7 @@ export default function Home(){
               </div>
             </div>
 
+            {/* Pills */}
             <div className="pills">
               {PROMPTS[activeTab].map(v => (
                 <div
@@ -151,7 +158,14 @@ export default function Home(){
               ))}
             </div>
 
-            {images.length>0 && (
+            {/* Loading / results */}
+            {isLoading && (
+              <div className="loadingWrap">
+                <div className="spinner" />
+              </div>
+            )}
+
+            {!isLoading && images.length>0 && (
               <section className="mtL">
                 <div style={{font:'600 20px/30px Poppins', margin:'16px 0'}}>Today</div>
                 <div className="grid">
@@ -181,18 +195,21 @@ export default function Home(){
 }
 
 function Editor({ data, onClose }){
-  const W = 900, H = 900, SAFE = 0.10;
+  const W = 900, H = 900, SAFE = 0.05;
   const canvasRef = useRef(null);
   const [img, setImg] = useState(null);
 
-  const [artist,setArtist] = useState('');
   const [title,setTitle]   = useState('');
+  const [artist,setArtist] = useState('');
   const [font,setFont]     = useState(FONTS[0].css);
-  const [size,setSize]     = useState(96); // shared size preset
+
   const [titleColor,setTitleColor]   = useState('#0F1222');
   const [artistColor,setArtistColor] = useState('#0F1222');
-  const [align,setAlign]   = useState('center');
-  const [vpos,setVpos]     = useState('bottom');
+
+  const [size,setSize] = useState(FONT_SIZES[3].value); // shared size preset
+
+  const [align,setAlign] = useState('center');
+  const [vpos,setVpos]   = useState('bottom');
 
   useEffect(()=>{
     const i = new Image();
@@ -208,11 +225,11 @@ function Editor({ data, onClose }){
     ctx.drawImage(img,0,0,W,H);
 
     const titleSize = size;
-    const artistSize = Math.round(size * 0.6);
+    const artistSize = Math.round(size*0.6);
 
     ctx.textBaseline = 'top';
 
-    // TITLE
+    // Title
     ctx.fillStyle = titleColor;
     ctx.font = `${titleSize}px "${font}"`;
     const titleW = ctx.measureText(title).width;
@@ -222,7 +239,7 @@ function Editor({ data, onClose }){
     if(align==='right')  textXTitle = sx + (sw - titleW);
     if (title) ctx.fillText(title, textXTitle, ty);
 
-    // ARTIST
+    // Artist
     if (artist){
       ctx.fillStyle = artistColor;
       ctx.font = `${artistSize}px "${font}"`;
@@ -233,7 +250,7 @@ function Editor({ data, onClose }){
       const ay = (vpos==='bottom') ? (ty + artistSize*1.2*1.6) : (ty + artistSize*1.2*1.2);
       ctx.fillText(artist, ax, ay);
     }
-  },[img, artist, title, font, size, titleColor, artistColor, align, vpos]);
+  },[img, title, artist, font, size, titleColor, artistColor, align, vpos]);
 
   async function downloadPNG(){
     const OUT = 3000;
@@ -241,14 +258,13 @@ function Editor({ data, onClose }){
     out.width = OUT; out.height = OUT;
     const ctx = out.getContext('2d');
 
-    ctx.drawImage(img, 0, 0, OUT, OUT);
+    ctx.drawImage(img,0,0,OUT,OUT);
 
     const titleSizeBig = Math.round(size * (OUT/W));
-    const artistSizeBig = Math.round(size * 0.6 * (OUT/W));
+    const artistSizeBig = Math.round(size*0.6 * (OUT/W));
 
     ctx.textBaseline = 'top';
 
-    // TITLE
     ctx.fillStyle = titleColor;
     ctx.font = `${titleSizeBig}px "${font}"`;
     const titleW = ctx.measureText(title).width;
@@ -258,7 +274,6 @@ function Editor({ data, onClose }){
     if(align==='right')  textXTitle = sx + (sw - titleW);
     if (title) ctx.fillText(title, textXTitle, ty);
 
-    // ARTIST
     if (artist){
       ctx.fillStyle = artistColor;
       ctx.font = `${artistSizeBig}px "${font}"`;
@@ -283,7 +298,7 @@ function Editor({ data, onClose }){
 
   return (
     <section className="editor">
-      <button className="closeBtn" onClick={onClose} aria-label="Close editor and go back">
+      <button className="closeBtn" onClick={onClose}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 6L6 18M6 6l12 12"/>
         </svg>
@@ -305,18 +320,20 @@ function Editor({ data, onClose }){
 
         <div className="sideTitle">Typography</div>
         <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
-          {FONTS.map(f => <option key={f.css} value={f.css} style={{fontFamily:`"${f.css}", sans-serif`}}>{f.label}</option>)}
+          {FONTS.map(f => (
+            <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
+              {f.label}
+            </option>
+          ))}
         </select>
 
-        {/* Two colours + one size */}
+        {/* Two colours + shared size */}
         <div className="grid4 mt8">
           <div className="colorSwatch">
             <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} aria-label="Title colour"/>
           </div>
           <select className="miniSelect" value={size} onChange={e=>setSize(parseInt(e.target.value,10))} aria-label="Font size">
-            {FONT_SIZES.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
+            {FONT_SIZES.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
           <div className="colorSwatch">
             <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} aria-label="Artist colour"/>
@@ -324,16 +341,13 @@ function Editor({ data, onClose }){
           <div />
         </div>
 
+        {/* Alignment controls */}
         <div className="row3" style={{marginTop:12}}>
           {['left','center','right'].map(a => (
-            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)}>
-              {a}
-            </button>
+            <button key={a} className={'aln'+(a===align?' alnOn':'')} onClick={()=>setAlign(a)}>{a}</button>
           ))}
           {['top','middle','bottom'].map(p => (
-            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)}>
-              {p}
-            </button>
+            <button key={p} className={'aln'+(p===vpos?' alnOn':'')} onClick={()=>setVpos(p)}>{p}</button>
           ))}
         </div>
 
