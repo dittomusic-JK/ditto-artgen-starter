@@ -319,35 +319,67 @@ function Editor({ data, onClose }){
         <input className="control" placeholder="Release Title" value={title} onChange={e=>setTitle(e.target.value)} />
 
         <div className="sideTitle">Typography</div>
-        <select className="control" value={font} onChange={e=>setFont(e.target.value)}>
-          {FONTS.map(f => (
-            <option key={f.css} value={f.css} style={{ fontFamily:`"${f.css}", sans-serif` }}>
-              {f.label}
-            </option>
-          ))}
-        </select>
 
-       {/* Row 1: Title color, Artist color, Font size */}
-<div className="row3 mt8">
-  <div className="colorSwatch">
-    <input type="color" className="colorInput" value={titleColor} onChange={e=>setTitleColor(e.target.value)} aria-label="Title colour"/>
+{/* Row 1: Title color + Artist color + Font family */}
+<div className="row2 mt8" style={{gap:12}}>
+  <div className="rowColors">
+    <div className="colorSwatch">
+      <input
+        type="color"
+        className="colorInput"
+        value={titleColor}
+        onChange={e=>setTitleColor(e.target.value)}
+        aria-label="Title colour"
+      />
+    </div>
+    <div className="colorSwatch">
+      <input
+        type="color"
+        className="colorInput"
+        value={artistColor}
+        onChange={e=>setArtistColor(e.target.value)}
+        aria-label="Artist colour"
+      />
+    </div>
   </div>
-  <div className="colorSwatch">
-    <input type="color" className="colorInput" value={artistColor} onChange={e=>setArtistColor(e.target.value)} aria-label="Artist colour"/>
-  </div>
-  <select className="miniSelect" value={size} onChange={e=>setSize(parseInt(e.target.value,10))} aria-label="Font size">
-    {[
-      {label:'Tiny', value:36},
-      {label:'X-Small', value:48},
-      {label:'Small', value:60},
-      {label:'Medium', value:80},
-      {label:'Large', value:100},
-      {label:'X-Large', value:120},
-      {label:'Huge', value:160}
-    ].map(opt => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
+
+  <select
+    className="control"
+    value={font}
+    onChange={e=>setFont(e.target.value)}
+  >
+    {FONTS.map(f => (
+      <option
+        key={f.css}
+        value={f.css}
+        style={{ fontFamily:`"${f.css}", sans-serif` }}
+      >
+        {f.label}
+      </option>
     ))}
   </select>
+</div>
+
+{/* Row 2: Font size */}
+<select
+  className="control mt8"
+  value={size}
+  onChange={e=>setSize(parseInt(e.target.value,10))}
+  aria-label="Font size"
+>
+  {[
+    {label:'Tiny', value:36},
+    {label:'X-Small', value:48},
+    {label:'Small', value:60},
+    {label:'Medium', value:80},
+    {label:'Large', value:100},
+    {label:'X-Large', value:120},
+    {label:'Huge', value:160}
+  ].map(opt => (
+    <option key={opt.value} value={opt.value}>{opt.label}</option>
+  ))}
+</select>
+
 </div>
 
 {/* Row 2: Alignment + Vertical position grouped */}
