@@ -29,7 +29,7 @@ body {
 
 /* prompt row */
 .promptGrid{ display:grid; grid-template-columns:1fr auto; gap:16px; }
-.input{ font:400 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border:0px; border-radius:12px; background:#fff; }
+.input{ font:300 20px/30px "DM Sans"; color:var(--sub); padding:14px 16px; border:0px; border-radius:12px; background:#fff; }
 
 .input:focus {
   outline: none;
@@ -56,7 +56,7 @@ body {
   color:#000;
   border-radius:8px;
   padding:8px 16px;
-  font:700 14px/24px "IBM Plex Mono", ui-monospace;
+  font:700 16px/24px "IBM Plex Mono", ui-monospace;
   cursor:pointer;
 }
 .tabOn {
@@ -67,7 +67,7 @@ body {
 }
 
 .pills{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
-.pill{ background:#F3F3FF; color:#555968; border-radius:8px; padding:10px 16px; font:400 16px/24px "IBM Plex Mono", ui-monospace; cursor:pointer; }
+.pill{ background:#F3F3FF; color:#555968; border-radius:8px; padding:10px 16px; font:400 14px/24px "IBM Plex Mono", ui-monospace; cursor:pointer; }
 .pillOn{ background:var(--ink); color:#fff; }
 
 /* results grid */
