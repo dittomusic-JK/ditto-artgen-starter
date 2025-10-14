@@ -14,7 +14,6 @@ const FONTS = [
   { label:'Playfair Display', css:'Playfair Display', demo:'Aa' },
   { label:'Raleway', css:'Raleway', demo:'Aa' },
   { label:'Rubik', css:'Rubik', demo:'Aa' },
-  // Display & Graffiti
   { label:'Bungee', css:'Bungee', demo:'Aa' },
   { label:'Righteous', css:'Righteous', demo:'Aa' },
   { label:'Permanent Marker', css:'Permanent Marker', demo:'Aa' },
@@ -22,7 +21,6 @@ const FONTS = [
   { label:'Black Ops One', css:'Black Ops One', demo:'Aa' },
   { label:'Londrina Solid', css:'Londrina Solid', demo:'Aa' },
   { label:'Alfa Slab One', css:'Alfa Slab One', demo:'Aa' },
-  // Handwritten
   { label:'Pacifico', css:'Pacifico', demo:'Aa' },
   { label:'Dancing Script', css:'Dancing Script', demo:'Aa' },
   { label:'Caveat', css:'Caveat', demo:'Aa' },
@@ -148,6 +146,11 @@ export default function Home(){
     }
   }
 
+  // Early return for edit mode - no title displayed
+  if (mode === 'edit' && selected) {
+    return <Editor data={selected} onClose={()=>setMode('gen')} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <style>{`
@@ -173,112 +176,104 @@ export default function Home(){
           <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent text-center sm:text-left" style={{fontFamily: 'Poppins'}}>
             Artwork Generator
           </h1>
-          {history.length > 0 && mode === 'gen' && (
+          {history.length > 0 && (
             <button className="px-4 py-2 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" style={{fontFamily: 'Poppins'}}>
               History ({history.length})
             </button>
           )}
         </header>
 
-        {mode==='gen' && (
-          <>
-            <section className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-8 mb-6 sm:mb-8">
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <input
-                  className="flex-1 text-lg sm:text-xl px-4 py-3 rounded-xl border-0 bg-white focus:outline-none focus:ring-0 transition-all"
-                  style={{fontFamily: 'Poppins', fontWeight: 400, boxShadow: 'none'}}
-                  placeholder="Describe the vibe..."
-                  value={prompt}
-                  onChange={e=>setPrompt(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && onGenerate()}
-                />
-                <button 
-                  className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 sm:whitespace-nowrap"
-                  style={{fontFamily: 'Poppins'}}
-                  onClick={onGenerate}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Generating...' : 'Generate'}
-                </button>
-              </div>
-            </section>
+        <section className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <input
+              className="flex-1 text-lg sm:text-xl px-4 py-3 rounded-xl border-0 bg-white focus:outline-none focus:ring-0 transition-all"
+              style={{fontFamily: 'Poppins', fontWeight: 400, boxShadow: 'none'}}
+              placeholder="Describe the vibe..."
+              value={prompt}
+              onChange={e=>setPrompt(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && onGenerate()}
+            />
+            <button 
+              className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 sm:whitespace-nowrap"
+              style={{fontFamily: 'Poppins'}}
+              onClick={onGenerate}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Generating...' : 'Generate'}
+            </button>
+          </div>
+        </section>
 
-            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 mb-4">
-              <div className="font-bold text-gray-700 text-sm sm:text-base" style={{fontFamily: 'IBM Plex Mono'}}>Add Prompts:</div>
-              <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
-                {[
-                  {key:'genre', label:'💿 Genre'},
-                  {key:'mood', label:'🙂 Mood'},
-                  {key:'style', label:'🖌️ Style'},
-                  {key:'texture', label:'🌫️ Texture'}
-                ].map(t => (
-                  <button
-                    key={t.key}
-                    className={`px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
-                      activeTab===t.key 
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                    style={{fontFamily: 'IBM Plex Mono'}}
-                    onClick={()=>setActiveTab(t.key)}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 mb-4">
+          <div className="font-bold text-gray-700 text-sm sm:text-base" style={{fontFamily: 'IBM Plex Mono'}}>Add Prompts:</div>
+          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+            {[
+              {key:'genre', label:'💿 Genre'},
+              {key:'mood', label:'🙂 Mood'},
+              {key:'style', label:'🖌️ Style'},
+              {key:'texture', label:'🌫️ Texture'}
+            ].map(t => (
+              <button
+                key={t.key}
+                className={`px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
+                  activeTab===t.key 
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                style={{fontFamily: 'IBM Plex Mono'}}
+                onClick={()=>setActiveTab(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-            <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
-              {PROMPTS[activeTab].map(v => (
-                <button
-                  key={v}
-                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
-                    picks[activeTab].includes(v)
-                      ? 'bg-gray-900 text-white shadow-md hover:scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  style={{fontFamily: 'IBM Plex Mono'}}
-                  onClick={()=>toggle(v)}
-                >
-                  + {v}
-                </button>
-              ))}
-            </div>
+        <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
+          {PROMPTS[activeTab].map(v => (
+            <button
+              key={v}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                picks[activeTab].includes(v)
+                  ? 'bg-gray-900 text-white shadow-md hover:scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              style={{fontFamily: 'IBM Plex Mono'}}
+              onClick={()=>toggle(v)}
+            >
+              + {v}
+            </button>
+          ))}
+        </div>
 
-            {isLoading && (
-              <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-purple-300 rounded-2xl bg-purple-50">
-                <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4" />
-                <p className="text-purple-600 font-medium animate-pulse-slow">Creating your artwork...</p>
-              </div>
-            )}
-
-            {!isLoading && images.length>0 && (
-              <section>
-                <h3 className="text-lg sm:text-xl font-semibold mb-4">Today</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
-                  {images.map((src,i)=>(
-                    <div
-                      key={i}
-                      className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative shadow-md hover:shadow-2xl transition-all hover:scale-105"
-                      onClick={()=>{
-                        setSelected({ src, prompt: assembledPrompt(prompt, picks) });
-                        setMode('edit');
-                      }}
-                    >
-                      <img src={src} className="w-full h-full object-cover" alt="" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 sm:p-4">
-                        <span className="text-white font-medium text-xs sm:text-sm">Click to edit</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-purple-300 rounded-2xl bg-purple-50">
+            <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4" />
+            <p className="text-purple-600 font-medium animate-pulse-slow">Creating your artwork...</p>
+          </div>
         )}
 
-        {mode==='edit' && selected && (
-          <Editor data={selected} onClose={()=>setMode('gen')} />
+        {!isLoading && images.length>0 && (
+          <section>
+            <h3 className="text-lg sm:text-xl font-semibold mb-4">Today</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+              {images.map((src,i)=>(
+                <div
+                  key={i}
+                  className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative shadow-md hover:shadow-2xl transition-all hover:scale-105"
+                  onClick={()=>{
+                    setSelected({ src, prompt: assembledPrompt(prompt, picks) });
+                    setMode('edit');
+                  }}
+                >
+                  <img src={src} className="w-full h-full object-cover" alt="" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 sm:p-4">
+                    <span className="text-white font-medium text-xs sm:text-sm">Click to edit</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
       </main>
     </div>
@@ -323,7 +318,6 @@ function Editor({ data, onClose }){
     i.crossOrigin = "anonymous";
     i.onload = ()=> setImg(i);
     i.onerror = () => {
-      // If direct load fails due to CORS, try proxy
       fetch(`/api/proxy-image?url=${encodeURIComponent(data.src)}`)
         .then(resp => resp.json())
         .then(json => {
@@ -521,10 +515,10 @@ function Editor({ data, onClose }){
   }
 
   return (
-    <div className="flex flex-col lg:flex-row">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <div className="flex-1 px-4 sm:px-6 py-4 sm:py-6 lg:mr-96">
         <button
-          className="mb-4 px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 flex items-center gap-2 transition-colors text-sm sm:text-base"
+          className="mb-4 px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 flex items-center gap-2 transition-colors text-sm sm:text-base shadow-sm"
           onClick={onClose}
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
