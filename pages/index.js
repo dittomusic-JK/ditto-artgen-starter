@@ -155,10 +155,35 @@ export default function Home(){
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&family=Bungee&family=Righteous&family=Permanent+Marker&family=Fredoka+One&family=Black+Ops+One&family=Londrina+Solid:wght@400;900&family=Alfa+Slab+One&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Indie+Flower&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Satisfy&display=swap');
+        @font-face {
+          font-family: 'Satoshi';
+          src: url('/fonts/Satoshi-Regular.woff2') format('woff2');
+          font-weight: 400;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'Satoshi';
+          src: url('/fonts/Satoshi-Medium.woff2') format('woff2');
+          font-weight: 500;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'Satoshi';
+          src: url('/fonts/Satoshi-Bold.woff2') format('woff2');
+          font-weight: 700;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'Satoshi';
+          src: url('/fonts/Satoshi-Black.woff2') format('woff2');
+          font-weight: 900;
+          font-style: normal;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&family=Bungee&family=Righteous&family=Permanent+Marker&family=Fredoka+One&family=Black+Ops+One&family=Londrina+Solid:wght@400;900&family=Alfa+Slab+One&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Indie+Flower&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Satisfy&display=swap');
         
         body {
-          font-family: 'Poppins', sans-serif;
+          font-family: 'Satoshi', sans-serif;
         }
         
         @keyframes spin {
@@ -173,8 +198,8 @@ export default function Home(){
       `}</style>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
-        <header className="flex flex-col sm:flex-row items-center sm:items-center justify-between mb-6 sm:mb-12 gap-4">
-          <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent text-center sm:text-left" style={{fontFamily: 'Poppins'}}>
+        <header className="flex flex-col items-center justify-center mb-6 sm:mb-12 gap-4">
+          <h1 className="text-4xl sm:text-6xl font-bold text-black text-center" style={{fontFamily: 'Satoshi', fontWeight: 700}}>
             Artwork Generator
           </h1>
           {history.length > 0 && (
@@ -184,7 +209,7 @@ export default function Home(){
                   ? 'bg-purple-600 text-white' 
                   : 'text-purple-600 hover:bg-purple-50'
               }`}
-              style={{fontFamily: 'Poppins'}}
+              style={{fontFamily: 'Satoshi'}}
               onClick={() => setShowHistory(!showHistory)}
             >
               {showHistory ? 'Hide History' : `History (${history.length})`}
@@ -196,7 +221,7 @@ export default function Home(){
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <input
               className="flex-1 text-lg sm:text-xl px-4 py-3 rounded-xl border-0 bg-white focus:outline-none focus:ring-0 transition-all"
-              style={{fontFamily: 'Poppins', fontWeight: 400, boxShadow: 'none'}}
+              style={{fontFamily: 'Satoshi', fontWeight: 400, boxShadow: 'none'}}
               placeholder="Describe the vibe..."
               value={prompt}
               onChange={e=>setPrompt(e.target.value)}
@@ -204,7 +229,7 @@ export default function Home(){
             />
             <button 
               className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 sm:whitespace-nowrap"
-              style={{fontFamily: 'Poppins'}}
+              style={{fontFamily: 'Satoshi'}}
               onClick={onGenerate}
               disabled={isLoading}
             >
@@ -946,7 +971,7 @@ function Editor({ data, onClose }){
         <div className="mt-auto pt-6 border-t border-gray-200">
           <button 
             className="w-full px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all"
-            style={{fontFamily: 'Poppins'}}
+            style={{fontFamily: 'Satoshi'}}
             onClick={downloadPNG}
           >
             🚀 Upscale & Download
