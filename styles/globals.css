@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root{
   --ink:#101F3C; --sub:#626984; --border:#D2D2E3; --muted:#AAAACC;
   --bg:#FEFDFF; --card:#FFFFFF; --purple:#5F1FFF;
