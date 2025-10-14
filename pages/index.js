@@ -443,7 +443,7 @@ function Editor({ data, onClose }){
     ctx.drawImage(img,0,0,OUT,OUT);
     ctx.filter = 'none';
 
-    const titleSizeBig = titleSize * scale;
+    const titleSizeBig = size * scale;
     const artistSizeBig = Math.round(size*0.6) * scale;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
