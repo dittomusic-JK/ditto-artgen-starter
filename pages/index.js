@@ -157,28 +157,32 @@ export default function Home(){
       <style>{`
         @font-face {
           font-family: 'Satoshi';
-          src: url('/fonts/Satoshi-Regular.woff2') format('woff2');
+          src: url('/assets/fonts/Satoshi-Regular.woff2') format('woff2'),
+               url('/fonts/Satoshi-Regular.woff2') format('woff2');
           font-weight: 400;
           font-style: normal;
           font-display: swap;
         }
         @font-face {
           font-family: 'Satoshi';
-          src: url('/fonts/Satoshi-Medium.woff2') format('woff2');
+          src: url('/assets/fonts/Satoshi-Medium.woff2') format('woff2'),
+               url('/fonts/Satoshi-Medium.woff2') format('woff2');
           font-weight: 500;
           font-style: normal;
           font-display: swap;
         }
         @font-face {
           font-family: 'Satoshi';
-          src: url('/fonts/Satoshi-Bold.woff2') format('woff2');
+          src: url('/assets/fonts/Satoshi-Bold.woff2') format('woff2'),
+               url('/fonts/Satoshi-Bold.woff2') format('woff2');
           font-weight: 700;
           font-style: normal;
           font-display: swap;
         }
         @font-face {
           font-family: 'Satoshi';
-          src: url('/fonts/Satoshi-Black.woff2') format('woff2');
+          src: url('/assets/fonts/Satoshi-Black.woff2') format('woff2'),
+               url('/fonts/Satoshi-Black.woff2') format('woff2');
           font-weight: 900;
           font-style: normal;
           font-display: swap;
