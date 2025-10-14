@@ -106,6 +106,7 @@ export default function Home(){
   const [isLoading, setIsLoading] = useState(false);
   const [selected,setSelected] = useState(null);
   const [history, setHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   const toggle = (value) => {
     setPicks(p => {
@@ -177,8 +178,16 @@ export default function Home(){
             Artwork Generator
           </h1>
           {history.length > 0 && (
-            <button className="px-4 py-2 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" style={{fontFamily: 'Poppins'}}>
-              History ({history.length})
+            <button 
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                showHistory 
+                  ? 'bg-purple-600 text-white' 
+                  : 'text-purple-600 hover:bg-purple-50'
+              }`}
+              style={{fontFamily: 'Poppins'}}
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              {showHistory ? 'Hide History' : `History (${history.length})`}
             </button>
           )}
         </header>
@@ -273,6 +282,50 @@ export default function Home(){
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {showHistory && history.length > 0 && (
+          <section className="mt-12">
+            <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
+              <span>Previous Generations</span>
+              <button 
+                onClick={() => setHistory([])}
+                className="text-sm text-red-600 hover:text-red-700 font-normal"
+              >
+                Clear All
+              </button>
+            </h3>
+            
+            {history.map((gen, idx) => (
+              <div key={gen.timestamp} className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-gray-600" style={{fontFamily: 'IBM Plex Mono'}}>
+                    {new Date(gen.timestamp).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500 italic line-clamp-1 max-w-md">
+                    {gen.prompt}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+                  {gen.images.map((src, i) => (
+                    <div
+                      key={i}
+                      className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative shadow-md hover:shadow-2xl transition-all hover:scale-105"
+                      onClick={() => {
+                        setSelected({ src, prompt: gen.prompt });
+                        setMode('edit');
+                      }}
+                    >
+                      <img src={src} className="w-full h-full object-cover" alt="" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 sm:p-4">
+                        <span className="text-white font-medium text-xs sm:text-sm">Click to edit</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </section>
         )}
       </main>
