@@ -838,7 +838,7 @@ function Editor({ data, onClose }){
             style={{fontFamily: 'Poppins'}}
             onClick={downloadPNG}
           >
-            🚀 Upscale & Download (3000×3000)
+            🚀 Upscale & Download
           </button>
         </div>
       </aside>
