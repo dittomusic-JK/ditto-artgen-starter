@@ -110,26 +110,34 @@ export default function Home(){
   };
 
   async function onGenerate(){
-    setIsLoading(true);
-    setImages([]);
-    
-    // Simulate API call with placeholder images
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const mockImages = [
-      'https://images.unsplash.com/photo-1611339555312-e607c8352fd7?w=1024&h=1024&fit=crop',
-      'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=1024&h=1024&fit=crop',
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1024&h=1024&fit=crop',
-      'https://images.unsplash.com/photo-1618556450994-a6a128ef0d9d?w=1024&h=1024&fit=crop'
-    ];
-    
-    setImages(mockImages);
-    setHistory(prev => [{
-      timestamp: Date.now(),
-      prompt: assembledPrompt(prompt, picks),
-      images: mockImages
-    }, ...prev].slice(0, 10));
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      setImages([]);
+      
+      const resp = await fetch('/api/generate', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ prompt, pills: picks })
+      });
+      
+      const data = await resp.json();
+      
+      if (!resp.ok) throw new Error(data?.error || 'Generation failed');
+      
+      const generatedImages = data.images || [];
+      setImages(generatedImages);
+      
+      setHistory(prev => [{
+        timestamp: Date.now(),
+        prompt: assembledPrompt(prompt, picks),
+        images: generatedImages
+      }, ...prev].slice(0, 10));
+      
+    } catch (e) {
+      alert(e.message || 'Something went wrong generating images.');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
