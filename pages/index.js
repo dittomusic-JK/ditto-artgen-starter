@@ -160,9 +160,9 @@ export default function Home(){
         .animate-pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
       `}</style>
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <header className="flex items-center justify-between mb-12">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" style={{fontFamily: 'Poppins'}}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        <header className="flex flex-col sm:flex-row items-center sm:items-center justify-between mb-6 sm:mb-12 gap-4">
+          <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent text-center sm:text-left" style={{fontFamily: 'Poppins'}}>
             Artwork Generator
           </h1>
           {history.length > 0 && mode === 'gen' && (
@@ -174,18 +174,18 @@ export default function Home(){
 
         {mode==='gen' && (
           <>
-            <section className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
-              <div className="flex gap-4">
+            <section className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-8 mb-6 sm:mb-8">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <input
-                  className="flex-1 text-xl px-4 py-3 rounded-xl border-0 bg-white focus:outline-none focus:ring-0 transition-all"
+                  className="flex-1 text-lg sm:text-xl px-4 py-3 rounded-xl border-0 bg-white focus:outline-none focus:ring-0 transition-all"
                   style={{fontFamily: 'Poppins', fontWeight: 400, boxShadow: 'none'}}
-                  placeholder="Describe the vibe of your artwork..."
+                  placeholder="Describe the vibe..."
                   value={prompt}
                   onChange={e=>setPrompt(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && onGenerate()}
                 />
                 <button 
-                  className="px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100"
+                  className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 sm:whitespace-nowrap"
                   style={{fontFamily: 'Poppins'}}
                   onClick={onGenerate}
                   disabled={isLoading}
@@ -195,9 +195,9 @@ export default function Home(){
               </div>
             </section>
 
-            <div className="flex items-end gap-4 mb-4">
-              <div className="font-bold text-gray-700" style={{fontFamily: 'IBM Plex Mono'}}>Add Prompts:</div>
-              <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 mb-4">
+              <div className="font-bold text-gray-700 text-sm sm:text-base" style={{fontFamily: 'IBM Plex Mono'}}>Add Prompts:</div>
+              <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
                 {[
                   {key:'genre', label:'💿 Genre'},
                   {key:'mood', label:'🙂 Mood'},
@@ -206,7 +206,7 @@ export default function Home(){
                 ].map(t => (
                   <button
                     key={t.key}
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    className={`px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
                       activeTab===t.key 
                         ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -220,11 +220,11 @@ export default function Home(){
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-8">
+            <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
               {PROMPTS[activeTab].map(v => (
                 <button
                   key={v}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                     picks[activeTab].includes(v)
                       ? 'bg-gray-900 text-white shadow-md hover:scale-105'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -246,8 +246,8 @@ export default function Home(){
 
             {!isLoading && images.length>0 && (
               <section>
-                <h3 className="text-xl font-semibold mb-4">Today</h3>
-                <div className="grid grid-cols-4 gap-6">
+                <h3 className="text-lg sm:text-xl font-semibold mb-4">Today</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
                   {images.map((src,i)=>(
                     <div
                       key={i}
@@ -258,8 +258,8 @@ export default function Home(){
                       }}
                     >
                       <img src={src} className="w-full h-full object-cover" alt="" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                        <span className="text-white font-medium text-sm">Click to edit</span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 sm:p-4">
+                        <span className="text-white font-medium text-xs sm:text-sm">Click to edit</span>
                       </div>
                     </div>
                   ))}
@@ -514,13 +514,13 @@ function Editor({ data, onClose }){
   }
 
   return (
-    <div className="flex">
-      <div className="flex-1 px-6 py-12" style={{marginRight: '384px'}}>
+    <div className="flex flex-col lg:flex-row">
+      <div className="flex-1 px-4 sm:px-6 py-4 sm:py-6 lg:mr-96">
         <button
-          className="mb-4 px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+          className="mb-4 px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 flex items-center gap-2 transition-colors text-sm sm:text-base"
           onClick={onClose}
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
           Back to Generator
@@ -539,7 +539,7 @@ function Editor({ data, onClose }){
           
           {title && (
             <div
-              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-purple-600 border-2 border-white shadow-lg cursor-grab hover:scale-110 transition-transform flex items-center justify-center"
+              className="absolute w-6 h-6 sm:w-8 sm:h-8 -ml-3 sm:-ml-4 -mt-3 sm:-mt-4 rounded-full bg-purple-600 border-2 border-white shadow-lg cursor-grab hover:scale-110 transition-transform flex items-center justify-center"
               style={{ left: `${titlePos.x * 100}%`, top: `${titlePos.y * 100}%` }}
               onMouseDown={(e) => handleMouseDown(e, 'title')}
             >
@@ -549,7 +549,7 @@ function Editor({ data, onClose }){
           
           {artist && (
             <div
-              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-blue-600 border-2 border-white shadow-lg cursor-grab hover:scale-110 transition-transform flex items-center justify-center"
+              className="absolute w-6 h-6 sm:w-8 sm:h-8 -ml-3 sm:-ml-4 -mt-3 sm:-mt-4 rounded-full bg-blue-600 border-2 border-white shadow-lg cursor-grab hover:scale-110 transition-transform flex items-center justify-center"
               style={{ left: `${artistPos.x * 100}%`, top: `${artistPos.y * 100}%` }}
               onMouseDown={(e) => handleMouseDown(e, 'artist')}
             >
@@ -559,8 +559,8 @@ function Editor({ data, onClose }){
         </div>
       </div>
 
-      <aside className="w-96 bg-white border-l border-gray-200 p-6 flex flex-col fixed right-0 top-0 h-screen overflow-y-auto">
-        <div className="text-sm text-gray-500 mb-4 pb-4 border-b border-gray-200" style={{fontFamily: 'IBM Plex Mono', lineHeight: '1.5'}}>
+      <aside className="w-full lg:w-96 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 p-4 sm:p-6 flex flex-col lg:fixed lg:right-0 lg:top-0 lg:h-screen overflow-y-auto">
+        <div className="text-xs sm:text-sm text-gray-500 mb-4 pb-4 border-b border-gray-200" style={{fontFamily: 'IBM Plex Mono', lineHeight: '1.5'}}>
           {data.prompt || '—'}
         </div>
 
@@ -568,7 +568,7 @@ function Editor({ data, onClose }){
           {['text', 'effects', 'filters'].map(panel => (
             <button
               key={panel}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activePanel === panel
                   ? 'bg-purple-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -849,7 +849,7 @@ function Editor({ data, onClose }){
             style={{fontFamily: 'Poppins'}}
             onClick={downloadPNG}
           >
-            🚀 Upscale & Download (3000×3000)
+            🚀 Upscale & Download
           </button>
         </div>
       </aside>
