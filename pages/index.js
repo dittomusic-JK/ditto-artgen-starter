@@ -229,7 +229,7 @@ export default function Home(){
             />
             <button 
               className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 sm:whitespace-nowrap"
-              style={{fontFamily: 'Satoshi'}}
+              style={{fontFamily: 'Poppins'}}
               onClick={onGenerate}
               disabled={isLoading}
             >
@@ -690,26 +690,38 @@ function Editor({ data, onClose }){
           ))}
         </div>
 
-        <div className="flex-1">{activePanel === 'text' && (
+        <div className="flex-1">        {activePanel === 'text' && (
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Release Title</label>
+            <div className="relative">
               <input 
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
-                placeholder="Release Title"
+                className="w-full px-3 pt-6 pb-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none peer"
+                placeholder=" "
                 value={title}
                 onChange={e=>setTitle(e.target.value)}
+                id="title-input"
               />
+              <label 
+                htmlFor="title-input"
+                className="absolute left-3 top-2 text-xs font-semibold text-gray-600 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:font-medium peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-purple-600"
+              >
+                Release Title
+              </label>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Artist Name</label>
+            <div className="relative">
               <input 
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
-                placeholder="Artist Name"
+                className="w-full px-3 pt-6 pb-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none peer"
+                placeholder=" "
                 value={artist}
                 onChange={e=>setArtist(e.target.value)}
+                id="artist-input"
               />
+              <label 
+                htmlFor="artist-input"
+                className="absolute left-3 top-2 text-xs font-semibold text-gray-600 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:font-medium peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-purple-600"
+              >
+                Artist Name
+              </label>
             </div>
 
             <div>
