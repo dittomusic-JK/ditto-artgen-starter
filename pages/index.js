@@ -160,30 +160,34 @@ export default function Home(){
           src: url('/fonts/Satoshi-Regular.woff2') format('woff2');
           font-weight: 400;
           font-style: normal;
+          font-display: swap;
         }
         @font-face {
           font-family: 'Satoshi';
           src: url('/fonts/Satoshi-Medium.woff2') format('woff2');
           font-weight: 500;
           font-style: normal;
+          font-display: swap;
         }
         @font-face {
           font-family: 'Satoshi';
           src: url('/fonts/Satoshi-Bold.woff2') format('woff2');
           font-weight: 700;
           font-style: normal;
+          font-display: swap;
         }
         @font-face {
           font-family: 'Satoshi';
           src: url('/fonts/Satoshi-Black.woff2') format('woff2');
           font-weight: 900;
           font-style: normal;
+          font-display: swap;
         }
         
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&family=Bungee&family=Righteous&family=Permanent+Marker&family=Fredoka+One&family=Black+Ops+One&family=Londrina+Solid:wght@400;900&family=Alfa+Slab+One&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Indie+Flower&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Satisfy&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&family=Bungee&family=Righteous&family=Permanent+Marker&family=Fredoka+One&family=Black+Ops+One&family=Londrina+Solid:wght@400;900&family=Alfa+Slab+One&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Indie+Flower&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Satisfy&display=swap');
         
         body {
-          font-family: 'Satoshi', sans-serif;
+          font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
         @keyframes spin {
@@ -470,73 +474,87 @@ function Editor({ data, onClose }){
 
   useEffect(()=>{
     if(!canvasRef.current || !img) return;
-    const ctx = canvasRef.current.getContext('2d');
     
-    ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur}px)`;
-    ctx.clearRect(0,0,W,H);
-    ctx.drawImage(img,0,0,W,H);
-    ctx.filter = 'none';
+    // Wait for fonts to load before drawing
+    const drawCanvas = async () => {
+      // Ensure the selected font is loaded
+      try {
+        await document.fonts.load(`700 ${titleSize}px "${font}"`);
+        await document.fonts.load(`600 ${artistSize}px "${font}"`);
+      } catch (e) {
+        console.warn('Font loading failed, using fallback:', e);
+      }
+      
+      const ctx = canvasRef.current.getContext('2d');
+      
+      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur}px)`;
+      ctx.clearRect(0,0,W,H);
+      ctx.drawImage(img,0,0,W,H);
+      ctx.filter = 'none';
 
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
 
-    if (title) {
-      const tx = titlePos.x * W;
-      const ty = titlePos.y * H;
-      
-      ctx.globalAlpha = titleOpacity / 100;
-      
-      if (titleShadow > 0) {
-        ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx.shadowBlur = titleShadow;
-        ctx.shadowOffsetX = titleShadow / 2;
-        ctx.shadowOffsetY = titleShadow / 2;
+      if (title) {
+        const tx = titlePos.x * W;
+        const ty = titlePos.y * H;
+        
+        ctx.globalAlpha = titleOpacity / 100;
+        
+        if (titleShadow > 0) {
+          ctx.shadowColor = 'rgba(0,0,0,0.8)';
+          ctx.shadowBlur = titleShadow;
+          ctx.shadowOffsetX = titleShadow / 2;
+          ctx.shadowOffsetY = titleShadow / 2;
+        }
+        
+        if (titleStroke > 0) {
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = titleStroke;
+          ctx.font = `700 ${titleSize}px "${font}", sans-serif`;
+          ctx.strokeText(title, tx, ty);
+        }
+        
+        ctx.fillStyle = titleColor;
+        ctx.font = `700 ${titleSize}px "${font}", sans-serif`;
+        ctx.fillText(title, tx, ty);
+        
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
       }
-      
-      if (titleStroke > 0) {
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = titleStroke;
-        ctx.font = `700 ${titleSize}px "${font}"`;
-        ctx.strokeText(title, tx, ty);
-      }
-      
-      ctx.fillStyle = titleColor;
-      ctx.font = `700 ${titleSize}px "${font}"`;
-      ctx.fillText(title, tx, ty);
-      
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.globalAlpha = 1;
-    }
 
-    if (artist) {
-      const ax = artistPos.x * W;
-      const ay = artistPos.y * H;
-      
-      ctx.globalAlpha = artistOpacity / 100;
-      
-      if (artistShadow > 0) {
-        ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx.shadowBlur = artistShadow;
-        ctx.shadowOffsetX = artistShadow / 2;
-        ctx.shadowOffsetY = artistShadow / 2;
+      if (artist) {
+        const ax = artistPos.x * W;
+        const ay = artistPos.y * H;
+        
+        ctx.globalAlpha = artistOpacity / 100;
+        
+        if (artistShadow > 0) {
+          ctx.shadowColor = 'rgba(0,0,0,0.8)';
+          ctx.shadowBlur = artistShadow;
+          ctx.shadowOffsetX = artistShadow / 2;
+          ctx.shadowOffsetY = artistShadow / 2;
+        }
+        
+        if (artistStroke > 0) {
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = artistStroke;
+          ctx.font = `600 ${artistSize}px "${font}", sans-serif`;
+          ctx.strokeText(artist, ax, ay);
+        }
+        
+        ctx.fillStyle = artistColor;
+        ctx.font = `600 ${artistSize}px "${font}", sans-serif`;
+        ctx.fillText(artist, ax, ay);
+        
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
       }
-      
-      if (artistStroke > 0) {
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = artistStroke;
-        ctx.font = `600 ${artistSize}px "${font}"`;
-        ctx.strokeText(artist, ax, ay);
-      }
-      
-      ctx.fillStyle = artistColor;
-      ctx.font = `600 ${artistSize}px "${font}"`;
-      ctx.fillText(artist, ax, ay);
-      
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.globalAlpha = 1;
-    }
+    };
+    
+    drawCanvas();
   },[img, title, artist, font, titleSize, artistSize, titleColor, artistColor, titlePos, artistPos, titleStroke, titleShadow, titleOpacity, artistStroke, artistShadow, artistOpacity, brightness, contrast, saturation, blur]);
 
   async function downloadPNG(){
@@ -544,6 +562,14 @@ function Editor({ data, onClose }){
     const out = document.createElement('canvas');
     out.width = OUT; out.height = OUT;
     const ctx = out.getContext('2d');
+
+    // Ensure fonts are loaded before export
+    try {
+      await document.fonts.load(`700 ${titleSize * (OUT/W)}px "${font}"`);
+      await document.fonts.load(`600 ${artistSize * (OUT/W)}px "${font}"`);
+    } catch (e) {
+      console.warn('Font loading failed for export:', e);
+    }
 
     const scale = OUT / W;
     ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur * scale}px)`;
@@ -570,12 +596,12 @@ function Editor({ data, onClose }){
       if (titleStroke > 0) {
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = titleStroke * scale;
-        ctx.font = `700 ${titleSizeBig}px "${font}"`;
+        ctx.font = `700 ${titleSizeBig}px "${font}", sans-serif`;
         ctx.strokeText(title, tx, ty);
       }
       
       ctx.fillStyle = titleColor;
-      ctx.font = `700 ${titleSizeBig}px "${font}"`;
+      ctx.font = `700 ${titleSizeBig}px "${font}", sans-serif`;
       ctx.fillText(title, tx, ty);
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
@@ -597,12 +623,12 @@ function Editor({ data, onClose }){
       if (artistStroke > 0) {
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = artistStroke * scale;
-        ctx.font = `600 ${artistSizeBig}px "${font}"`;
+        ctx.font = `600 ${artistSizeBig}px "${font}", sans-serif`;
         ctx.strokeText(artist, ax, ay);
       }
       
       ctx.fillStyle = artistColor;
-      ctx.font = `600 ${artistSizeBig}px "${font}"`;
+      ctx.font = `600 ${artistSizeBig}px "${font}", sans-serif`;
       ctx.fillText(artist, ax, ay);
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
