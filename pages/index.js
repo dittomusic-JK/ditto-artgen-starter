@@ -693,8 +693,8 @@ function Editor({ data, onClose }){
             </div>
 
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="flex gap-3">
+                <div className="flex-1">
                   <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Color</label>
                   <input 
                     type="color"
@@ -703,7 +703,7 @@ function Editor({ data, onClose }){
                     onChange={e=>setTitleColor(e.target.value)}
                   />
                 </div>
-                <div>
+                <div className="flex-1">
                   <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Size</label>
                   <select
                     className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
@@ -717,8 +717,8 @@ function Editor({ data, onClose }){
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="flex gap-3">
+                <div className="flex-1">
                   <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Color</label>
                   <input 
                     type="color"
@@ -727,7 +727,7 @@ function Editor({ data, onClose }){
                     onChange={e=>setArtistColor(e.target.value)}
                   />
                 </div>
-                <div>
+                <div className="flex-1">
                   <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Size</label>
                   <select
                     className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
