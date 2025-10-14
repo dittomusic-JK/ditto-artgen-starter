@@ -14,17 +14,25 @@ const FONTS = [
   { label:'Playfair Display', css:'Playfair Display', demo:'Aa' },
   { label:'Raleway', css:'Raleway', demo:'Aa' },
   { label:'Rubik', css:'Rubik', demo:'Aa' },
+  // Display & Graffiti
+  { label:'Bungee', css:'Bungee', demo:'Aa' },
+  { label:'Righteous', css:'Righteous', demo:'Aa' },
+  { label:'Permanent Marker', css:'Permanent Marker', demo:'Aa' },
+  { label:'Fredoka One', css:'Fredoka One', demo:'Aa' },
+  { label:'Black Ops One', css:'Black Ops One', demo:'Aa' },
+  { label:'Londrina Solid', css:'Londrina Solid', demo:'Aa' },
+  { label:'Alfa Slab One', css:'Alfa Slab One', demo:'Aa' },
+  // Handwritten
+  { label:'Pacifico', css:'Pacifico', demo:'Aa' },
+  { label:'Dancing Script', css:'Dancing Script', demo:'Aa' },
+  { label:'Caveat', css:'Caveat', demo:'Aa' },
+  { label:'Indie Flower', css:'Indie Flower', demo:'Aa' },
+  { label:'Shadows Into Light', css:'Shadows Into Light', demo:'Aa' },
+  { label:'Amatic SC', css:'Amatic SC', demo:'Aa' },
+  { label:'Satisfy', css:'Satisfy', demo:'Aa' },
 ];
 
-const FONT_SIZES = [
-  { label: "Tiny", value: 48 },
-  { label: "X-Small", value: 64 },
-  { label: "Small", value: 84 },
-  { label: "Medium", value: 112 },
-  { label: "Large", value: 144 },
-  { label: "X-Large", value: 180 },
-  { label: "Huge", value: 220 }
-];
+const FONT_SIZES = [32, 40, 48, 56, 64, 72, 84, 96, 112, 128, 144, 160, 180, 200, 220, 240];
 
 const TABS = ['genre', 'mood', 'style', 'texture'];
 const PROMPTS = {
@@ -143,7 +151,7 @@ export default function Home(){
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&family=Bungee&family=Righteous&family=Permanent+Marker&family=Fredoka+One&family=Black+Ops+One&family=Londrina+Solid:wght@400;900&family=Alfa+Slab+One&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Indie+Flower&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Satisfy&display=swap');
         
         body {
           font-family: 'Poppins', sans-serif;
@@ -288,7 +296,8 @@ function Editor({ data, onClose }){
   const [font,setFont] = useState(FONTS[0].css);
   const [titleColor,setTitleColor] = useState('#FFFFFF');
   const [artistColor,setArtistColor] = useState('#FFFFFF');
-  const [size,setSize] = useState(FONT_SIZES[3].value);
+  const [titleSize,setTitleSize] = useState(112);
+  const [artistSize,setArtistSize] = useState(72);
   
   const [titlePos, setTitlePos] = useState({ x: 0.5, y: 0.85 });
   const [artistPos, setArtistPos] = useState({ x: 0.5, y: 0.92 });
@@ -368,8 +377,6 @@ function Editor({ data, onClose }){
     ctx.drawImage(img,0,0,W,H);
     ctx.filter = 'none';
 
-    const titleSize = size;
-    const artistSize = Math.round(size*0.6);
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
 
@@ -430,7 +437,7 @@ function Editor({ data, onClose }){
       ctx.shadowBlur = 0;
       ctx.globalAlpha = 1;
     }
-  },[img, title, artist, font, size, titleColor, artistColor, titlePos, artistPos, titleStroke, titleShadow, titleOpacity, artistStroke, artistShadow, artistOpacity, brightness, contrast, saturation, blur]);
+  },[img, title, artist, font, titleSize, artistSize, titleColor, artistColor, titlePos, artistPos, titleStroke, titleShadow, titleOpacity, artistStroke, artistShadow, artistOpacity, brightness, contrast, saturation, blur]);
 
   async function downloadPNG(){
     const OUT = 3000;
@@ -443,8 +450,8 @@ function Editor({ data, onClose }){
     ctx.drawImage(img,0,0,OUT,OUT);
     ctx.filter = 'none';
 
-    const titleSizeBig = size * scale;
-    const artistSizeBig = Math.round(size*0.6) * scale;
+    const titleSizeBig = titleSize * scale;
+    const artistSizeBig = artistSize * scale;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
 
@@ -608,8 +615,8 @@ function Editor({ data, onClose }){
               <FontPicker value={font} onChange={setFont} />
             </div>
 
-            <div className="flex gap-3">
-              <div className="flex-1">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
                 <label className="block text-sm font-medium mb-2">Title Color</label>
                 <input 
                   type="color"
@@ -618,7 +625,22 @@ function Editor({ data, onClose }){
                   onChange={e=>setTitleColor(e.target.value)}
                 />
               </div>
-              <div className="flex-1">
+              <div>
+                <label className="block text-sm font-medium mb-2">Title Size</label>
+                <select
+                  className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm"
+                  value={titleSize}
+                  onChange={e=>setTitleSize(parseInt(e.target.value,10))}
+                >
+                  {FONT_SIZES.map(size => (
+                    <option key={size} value={size}>{size}px</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
                 <label className="block text-sm font-medium mb-2">Artist Color</label>
                 <input 
                   type="color"
@@ -627,19 +649,18 @@ function Editor({ data, onClose }){
                   onChange={e=>setArtistColor(e.target.value)}
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Font Size</label>
-              <select
-                className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white"
-                value={size}
-                onChange={e=>setSize(parseInt(e.target.value,10))}
-              >
-                {FONT_SIZES.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+              <div>
+                <label className="block text-sm font-medium mb-2">Artist Size</label>
+                <select
+                  className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm"
+                  value={artistSize}
+                  onChange={e=>setArtistSize(parseInt(e.target.value,10))}
+                >
+                  {FONT_SIZES.map(size => (
+                    <option key={size} value={size}>{size}px</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
