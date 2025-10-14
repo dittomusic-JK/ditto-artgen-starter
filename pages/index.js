@@ -694,18 +694,18 @@ function Editor({ data, onClose }){
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-2">Title Color</label>
+                <label className="block text-sm font-semibold mb-2">Title Color</label>
                 <input 
                   type="color"
-                  className="w-full h-10 rounded-lg border border-gray-300 cursor-pointer"
+                  className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
                   value={titleColor}
                   onChange={e=>setTitleColor(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Title Size</label>
+                <label className="block text-sm font-semibold mb-2">Title Size</label>
                 <select
-                  className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm"
+                  className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
                   value={titleSize}
                   onChange={e=>setTitleSize(parseInt(e.target.value,10))}
                 >
@@ -718,18 +718,18 @@ function Editor({ data, onClose }){
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-2">Artist Color</label>
+                <label className="block text-sm font-semibold mb-2">Artist Color</label>
                 <input 
                   type="color"
-                  className="w-full h-10 rounded-lg border border-gray-300 cursor-pointer"
+                  className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
                   value={artistColor}
                   onChange={e=>setArtistColor(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Artist Size</label>
+                <label className="block text-sm font-semibold mb-2">Artist Size</label>
                 <select
-                  className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm"
+                  className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
                   value={artistSize}
                   onChange={e=>setArtistSize(parseInt(e.target.value,10))}
                 >
