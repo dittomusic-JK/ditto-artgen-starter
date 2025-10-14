@@ -692,51 +692,53 @@ function Editor({ data, onClose }){
               <FontPicker value={font} onChange={setFont} />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Title Color</label>
-                <input 
-                  type="color"
-                  className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
-                  value={titleColor}
-                  onChange={e=>setTitleColor(e.target.value)}
-                />
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Color</label>
+                  <input 
+                    type="color"
+                    className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
+                    value={titleColor}
+                    onChange={e=>setTitleColor(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Size</label>
+                  <select
+                    className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
+                    value={titleSize}
+                    onChange={e=>setTitleSize(parseInt(e.target.value,10))}
+                  >
+                    {FONT_SIZES.map(size => (
+                      <option key={size} value={size}>{size}px</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Title Size</label>
-                <select
-                  className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
-                  value={titleSize}
-                  onChange={e=>setTitleSize(parseInt(e.target.value,10))}
-                >
-                  {FONT_SIZES.map(size => (
-                    <option key={size} value={size}>{size}px</option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Artist Color</label>
-                <input 
-                  type="color"
-                  className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
-                  value={artistColor}
-                  onChange={e=>setArtistColor(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Artist Size</label>
-                <select
-                  className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
-                  value={artistSize}
-                  onChange={e=>setArtistSize(parseInt(e.target.value,10))}
-                >
-                  {FONT_SIZES.map(size => (
-                    <option key={size} value={size}>{size}px</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Color</label>
+                  <input 
+                    type="color"
+                    className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
+                    value={artistColor}
+                    onChange={e=>setArtistColor(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Size</label>
+                  <select
+                    className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
+                    value={artistSize}
+                    onChange={e=>setArtistSize(parseInt(e.target.value,10))}
+                  >
+                    {FONT_SIZES.map(size => (
+                      <option key={size} value={size}>{size}px</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
