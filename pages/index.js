@@ -333,7 +333,7 @@ export default function Home(){
             {history.map((gen, idx) => (
               <div key={gen.timestamp} className="mb-8">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-gray-600" style={{fontFamily: 'IBM Plex Mono'}}>
+                  <p className="text-sm text-gray-600" style={{fontFamily: '"IBM Plex Mono", "Courier New", Courier, monospace'}}>
                     {new Date(gen.timestamp).toLocaleString()}
                   </p>
                   <p className="text-xs text-gray-500 italic line-clamp-1 max-w-md">
@@ -699,7 +699,7 @@ function Editor({ data, onClose }){
       </div>
 
       <aside className="w-full lg:w-96 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 p-4 sm:p-6 flex flex-col lg:fixed lg:right-0 lg:top-0 lg:h-screen overflow-y-auto">
-        <div className="text-xs sm:text-sm text-gray-500 mb-4 pb-4 border-b border-gray-200" style={{fontFamily: 'IBM Plex Mono', lineHeight: '1.5'}}>
+        <div className="text-xs sm:text-sm text-gray-500 mb-4 pb-4 border-b border-gray-200" style={{fontFamily: '"IBM Plex Mono", "Courier New", Courier, monospace', lineHeight: '1.5'}}>
           {data.prompt || '—'}
         </div>
 
@@ -712,7 +712,7 @@ function Editor({ data, onClose }){
                   ? 'bg-purple-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
-              style={{fontFamily: 'IBM Plex Mono'}}
+              style={{fontFamily: '"IBM Plex Mono", "Courier New", Courier, monospace'}}
               onClick={() => setActivePanel(panel)}
             >
               {panel.charAt(0).toUpperCase() + panel.slice(1)}
