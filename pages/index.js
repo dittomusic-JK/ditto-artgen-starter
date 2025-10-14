@@ -313,6 +313,17 @@ function Editor({ data, onClose }){
     const i = new Image();
     i.crossOrigin = "anonymous";
     i.onload = ()=> setImg(i);
+    i.onerror = () => {
+      // If direct load fails due to CORS, try proxy
+      fetch(`/api/proxy-image?url=${encodeURIComponent(data.src)}`)
+        .then(resp => resp.json())
+        .then(json => {
+          if (json.dataUrl) {
+            i.src = json.dataUrl;
+          }
+        })
+        .catch(e => console.error('Failed to load image:', e));
+    };
     i.src = data.src;
   },[data.src]);
 
@@ -838,7 +849,7 @@ function Editor({ data, onClose }){
             style={{fontFamily: 'Poppins'}}
             onClick={downloadPNG}
           >
-            🚀 Upscale & Download
+            🚀 Upscale & Download (3000×3000)
           </button>
         </div>
       </aside>
