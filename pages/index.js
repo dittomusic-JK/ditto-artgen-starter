@@ -389,6 +389,12 @@ function Editor({ data, onClose }){
     e.preventDefault();
   };
 
+  const handleTouchStart = (e, type) => {
+    if (!previewRef.current) return;
+    setDragging(type);
+    e.preventDefault();
+  };
+
   const handleMouseMove = useCallback((e) => {
     if (!dragging || !previewRef.current) return;
     
@@ -400,7 +406,25 @@ function Editor({ data, onClose }){
     if (dragging === 'artist') setArtistPos({ x, y });
   }, [dragging]);
 
+  const handleTouchMove = useCallback((e) => {
+    if (!dragging || !previewRef.current) return;
+    
+    const touch = e.touches[0];
+    if (!touch) return;
+    
+    const rect = previewRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
+    
+    if (dragging === 'title') setTitlePos({ x, y });
+    if (dragging === 'artist') setArtistPos({ x, y });
+  }, [dragging]);
+
   const handleMouseUp = useCallback(() => {
+    setDragging(null);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
     setDragging(null);
   }, []);
 
@@ -408,12 +432,16 @@ function Editor({ data, onClose }){
     if (dragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleTouchEnd);
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
       };
     }
-  }, [dragging, handleMouseMove, handleMouseUp]);
+  }, [dragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   useEffect(()=>{
     if(!canvasRef.current || !img) return;
@@ -594,8 +622,9 @@ function Editor({ data, onClose }){
           {title && (
             <div
               className="absolute w-6 h-6 sm:w-8 sm:h-8 -ml-3 sm:-ml-4 -mt-3 sm:-mt-4 rounded-full bg-purple-600 border-2 border-white shadow-lg cursor-grab hover:scale-110 transition-transform flex items-center justify-center"
-              style={{ left: `${titlePos.x * 100}%`, top: `${titlePos.y * 100}%` }}
+              style={{ left: `${titlePos.x * 100}%`, top: `${titlePos.y * 100}%`, touchAction: 'none' }}
               onMouseDown={(e) => handleMouseDown(e, 'title')}
+              onTouchStart={(e) => handleTouchStart(e, 'title')}
             >
               <span className="text-white text-xs font-bold">T</span>
             </div>
@@ -604,8 +633,9 @@ function Editor({ data, onClose }){
           {artist && (
             <div
               className="absolute w-6 h-6 sm:w-8 sm:h-8 -ml-3 sm:-ml-4 -mt-3 sm:-mt-4 rounded-full bg-blue-600 border-2 border-white shadow-lg cursor-grab hover:scale-110 transition-transform flex items-center justify-center"
-              style={{ left: `${artistPos.x * 100}%`, top: `${artistPos.y * 100}%` }}
+              style={{ left: `${artistPos.x * 100}%`, top: `${artistPos.y * 100}%`, touchAction: 'none' }}
               onMouseDown={(e) => handleMouseDown(e, 'artist')}
+              onTouchStart={(e) => handleTouchStart(e, 'artist')}
             >
               <span className="text-white text-xs font-bold">A</span>
             </div>
