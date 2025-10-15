@@ -160,20 +160,34 @@ export default function Home(){
       return;
     }
 
-    const demoImages = [
-      'https://images.unsplash.com/photo-1614854262318-831574f15f1f?w=900&h=900&fit=crop',
-      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&h=900&fit=crop',
-      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=900&h=900&fit=crop',
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&h=900&fit=crop'
-    ];
-
     try {
       setIsLoading(true);
       setImages([]);
       
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get auth token for production (uncomment when deploying)
+      // const token = await getAuthTokenFromParent();
       
-      const generatedImages = demoImages;
+      const resp = await fetch('/api/generate', {
+        method:'POST',
+        headers: {
+          'Content-Type':'application/json',
+          // 'Authorization': `Bearer ${token}`, // Uncomment for production
+        },
+        body: JSON.stringify({ prompt, pills: picks })
+      });
+      
+      const data = await resp.json();
+      
+      if (!resp.ok) {
+        if (resp.status === 429) {
+          // Limit reached
+          setShowUpgradeModal(true);
+          throw new Error(data.message || 'Generation limit reached');
+        }
+        throw new Error(data?.error || 'Generation failed');
+      }
+      
+      const generatedImages = data.images || [];
       setImages(generatedImages);
       
       setHistory(prev => [{
@@ -182,6 +196,7 @@ export default function Home(){
         images: generatedImages
       }, ...prev].slice(0, 10));
       
+      // Update usage counter after successful generation
       if (userStatus) {
         setUserStatus(prev => ({
           ...prev,
@@ -193,6 +208,9 @@ export default function Home(){
           can_generate: prev.usage.generations_remaining - 1 > 0
         }));
       }
+      
+      // Optionally refresh from server to ensure accuracy
+      // await fetchUserStatus();
       
     } catch (e) {
       alert(e.message || 'Something went wrong generating images.');
