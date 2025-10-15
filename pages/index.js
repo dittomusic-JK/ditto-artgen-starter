@@ -154,6 +154,8 @@ export default function Home(){
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&family=Bungee&family=Righteous&family=Permanent+Marker&family=Fredoka+One&family=Black+Ops+One&family=Londrina+Solid:wght@400;900&family=Alfa+Slab+One&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Indie+Flower&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Satisfy&display=swap');
+        
         @font-face {
           font-family: 'Satoshi';
           src: url('/assets/fonts/Satoshi-Regular.woff2') format('woff2'),
@@ -186,8 +188,6 @@ export default function Home(){
           font-style: normal;
           font-display: swap;
         }
-        
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700&family=Oswald:wght@500;700&family=Montserrat+Alternates:wght@600;700&family=Nunito+Sans:wght@600;700&family=Archivo:wght@600;700&family=Space+Grotesk:wght@600;700&family=Playfair+Display:wght@700&family=Raleway:wght@600;700&family=Rubik:wght@600;700&family=Bungee&family=Righteous&family=Permanent+Marker&family=Fredoka+One&family=Black+Ops+One&family=Londrina+Solid:wght@400;900&family=Alfa+Slab+One&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Indie+Flower&family=Shadows+Into+Light&family=Amatic+SC:wght@400;700&family=Satisfy&display=swap');
         
         body {
           font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
