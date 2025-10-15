@@ -147,7 +147,6 @@ export default function Home(){
     }
   }
 
-  // Early return for edit mode - no title displayed
   if (mode === 'edit' && selected) {
     return <Editor data={selected} onClose={()=>setMode('gen')} />;
   }
@@ -330,7 +329,7 @@ export default function Home(){
               </button>
             </h3>
             
-            {history.map((gen, idx) => (
+            {history.map((gen) => (
               <div key={gen.timestamp} className="mb-8">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm text-gray-600" style={{fontFamily: '"IBM Plex Mono", "Courier New", Courier, monospace'}}>
@@ -367,7 +366,7 @@ export default function Home(){
 }
 
 function Editor({ data, onClose }){
-  const W = 900, H = 900, SAFE = 0.05;
+  const W = 900, H = 900;
   const canvasRef = useRef(null);
   const previewRef = useRef(null);
   const [img, setImg] = useState(null);
@@ -479,9 +478,7 @@ function Editor({ data, onClose }){
   useEffect(()=>{
     if(!canvasRef.current || !img) return;
     
-    // Wait for fonts to load before drawing
     const drawCanvas = async () => {
-      // Ensure the selected font is loaded
       try {
         await document.fonts.load(`700 ${titleSize}px "${font}"`);
         await document.fonts.load(`600 ${artistSize}px "${font}"`);
@@ -567,7 +564,6 @@ function Editor({ data, onClose }){
     out.width = OUT; out.height = OUT;
     const ctx = out.getContext('2d');
 
-    // Ensure fonts are loaded before export
     try {
       await document.fonts.load(`700 ${titleSize * (OUT/W)}px "${font}"`);
       await document.fonts.load(`600 ${artistSize * (OUT/W)}px "${font}"`);
@@ -720,294 +716,294 @@ function Editor({ data, onClose }){
           ))}
         </div>
 
-        <div className="flex-1">        {activePanel === 'text' && (
-          <div className="space-y-4">
-            <div className="relative">
-              <input 
-                className="w-full px-3 pt-6 pb-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none peer"
-                placeholder=" "
-                value={title}
-                onChange={e=>setTitle(e.target.value)}
-                id="title-input"
-              />
-              <label 
-                htmlFor="title-input"
-                className="absolute left-3 top-2 text-xs font-semibold text-gray-600 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:font-medium peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-purple-600"
-              >
-                Release Title
-              </label>
-            </div>
-
-            <div className="relative">
-              <input 
-                className="w-full px-3 pt-6 pb-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none peer"
-                placeholder=" "
-                value={artist}
-                onChange={e=>setArtist(e.target.value)}
-                id="artist-input"
-              />
-              <label 
-                htmlFor="artist-input"
-                className="absolute left-3 top-2 text-xs font-semibold text-gray-600 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:font-medium peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-purple-600"
-              >
-                Artist Name
-              </label>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Font Family</label>
-              <FontPicker value={font} onChange={setFont} />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Color</label>
-                  <input 
-                    type="color"
-                    className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
-                    value={titleColor}
-                    onChange={e=>setTitleColor(e.target.value)}
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Size</label>
-                  <select
-                    className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
-                    value={titleSize}
-                    onChange={e=>setTitleSize(parseInt(e.target.value,10))}
-                  >
-                    {FONT_SIZES.map(size => (
-                      <option key={size} value={size}>{size}px</option>
-                    ))}
-                  </select>
-                </div>
+        <div className="flex-1">
+          {activePanel === 'text' && (
+            <div className="space-y-4">
+              <div className="relative">
+                <input 
+                  className="w-full px-3 pt-6 pb-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none peer"
+                  placeholder=" "
+                  value={title}
+                  onChange={e=>setTitle(e.target.value)}
+                  id="title-input"
+                />
+                <label 
+                  htmlFor="title-input"
+                  className="absolute left-3 top-2 text-xs font-semibold text-gray-600 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:font-medium peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-purple-600"
+                >
+                  Release Title
+                </label>
               </div>
 
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Color</label>
-                  <input 
-                    type="color"
-                    className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
-                    value={artistColor}
-                    onChange={e=>setArtistColor(e.target.value)}
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Size</label>
-                  <select
-                    className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
-                    value={artistSize}
-                    onChange={e=>setArtistSize(parseInt(e.target.value,10))}
-                  >
-                    {FONT_SIZES.map(size => (
-                      <option key={size} value={size}>{size}px</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="relative">
+                <input 
+                  className="w-full px-3 pt-6 pb-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none peer"
+                  placeholder=" "
+                  value={artist}
+                  onChange={e=>setArtist(e.target.value)}
+                  id="artist-input"
+                />
+                <label 
+                  htmlFor="artist-input"
+                  className="absolute left-3 top-2 text-xs font-semibold text-gray-600 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:font-medium peer-placeholder-shown:text-gray-400 peer-focus:top-2 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-purple-600"
+                >
+                  Artist Name
+                </label>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <input 
-                type="checkbox"
-                id="safeZone"
-                checked={showSafeZone}
-                onChange={e=>setShowSafeZone(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-              />
-              <label htmlFor="safeZone" className="text-sm font-medium">Show safe zone</label>
-            </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Font Family</label>
+                <FontPicker value={font} onChange={setFont} />
+              </div>
 
-            <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-800">
-              💡 <strong>Tip:</strong> Drag the purple (T) and blue (A) handles to reposition text
-            </div>
-          </div>
-        )}
-
-        {activePanel === 'effects' && (
-          <div className="space-y-4">
-            <div className="border-b border-gray-200 pb-4">
-              <h4 className="font-semibold mb-3">Title Effects</h4>
-              
               <div className="space-y-3">
-                <div>
-                  <label className="flex justify-between text-sm mb-1">
-                    <span>Stroke</span>
-                    <span className="text-gray-500">{titleStroke}px</span>
-                  </label>
-                  <input 
-                    type="range"
-                    min="0"
-                    max="20"
-                    value={titleStroke}
-                    onChange={e=>setTitleStroke(Number(e.target.value))}
-                    className="w-full accent-purple-600"
-                  />
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Color</label>
+                    <input 
+                      type="color"
+                      className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
+                      value={titleColor}
+                      onChange={e=>setTitleColor(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Title Size</label>
+                    <select
+                      className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
+                      value={titleSize}
+                      onChange={e=>setTitleSize(parseInt(e.target.value,10))}
+                    >
+                      {FONT_SIZES.map(size => (
+                        <option key={size} value={size}>{size}px</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="flex justify-between text-sm mb-1">
-                    <span>Shadow</span>
-                    <span className="text-gray-500">{titleShadow}px</span>
-                  </label>
-                  <input 
-                    type="range"
-                    min="0"
-                    max="30"
-                    value={titleShadow}
-                    onChange={e=>setTitleShadow(Number(e.target.value))}
-                    className="w-full accent-purple-600"
-                  />
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Color</label>
+                    <input 
+                      type="color"
+                      className="w-full h-11 rounded-lg border border-gray-300 cursor-pointer"
+                      value={artistColor}
+                      onChange={e=>setArtistColor(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-semibold mb-1.5 whitespace-nowrap">Artist Size</label>
+                    <select
+                      className="w-full h-11 px-3 rounded-lg border border-gray-300 bg-white text-sm font-medium"
+                      value={artistSize}
+                      onChange={e=>setArtistSize(parseInt(e.target.value,10))}
+                    >
+                      {FONT_SIZES.map(size => (
+                        <option key={size} value={size}>{size}px</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="flex justify-between text-sm mb-1">
-                    <span>Opacity</span>
-                    <span className="text-gray-500">{titleOpacity}%</span>
-                  </label>
-                  <input 
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={titleOpacity}
-                    onChange={e=>setTitleOpacity(Number(e.target.value))}
-                    className="w-full accent-purple-600"
-                  />
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox"
+                  id="safeZone"
+                  checked={showSafeZone}
+                  onChange={e=>setShowSafeZone(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <label htmlFor="safeZone" className="text-sm font-medium">Show safe zone</label>
+              </div>
+
+              <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-800">
+                💡 <strong>Tip:</strong> Drag the purple (T) and blue (A) handles to reposition text
+              </div>
+            </div>
+          )}
+
+          {activePanel === 'effects' && (
+            <div className="space-y-4">
+              <div className="border-b border-gray-200 pb-4">
+                <h4 className="font-semibold mb-3">Title Effects</h4>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="flex justify-between text-sm mb-1">
+                      <span>Stroke</span>
+                      <span className="text-gray-500">{titleStroke}px</span>
+                    </label>
+                    <input 
+                      type="range"
+                      min="0"
+                      max="20"
+                      value={titleStroke}
+                      onChange={e=>setTitleStroke(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex justify-between text-sm mb-1">
+                      <span>Shadow</span>
+                      <span className="text-gray-500">{titleShadow}px</span>
+                    </label>
+                    <input 
+                      type="range"
+                      min="0"
+                      max="30"
+                      value={titleShadow}
+                      onChange={e=>setTitleShadow(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex justify-between text-sm mb-1">
+                      <span>Opacity</span>
+                      <span className="text-gray-500">{titleOpacity}%</span>
+                    </label>
+                    <input 
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={titleOpacity}
+                      onChange={e=>setTitleOpacity(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-3">Artist Effects</h4>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="flex justify-between text-sm mb-1">
+                      <span>Stroke</span>
+                      <span className="text-gray-500">{artistStroke}px</span>
+                    </label>
+                    <input 
+                      type="range"
+                      min="0"
+                      max="20"
+                      value={artistStroke}
+                      onChange={e=>setArtistStroke(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex justify-between text-sm mb-1">
+                      <span>Shadow</span>
+                      <span className="text-gray-500">{artistShadow}px</span>
+                    </label>
+                    <input 
+                      type="range"
+                      min="0"
+                      max="30"
+                      value={artistShadow}
+                      onChange={e=>setArtistShadow(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex justify-between text-sm mb-1">
+                      <span>Opacity</span>
+                      <span className="text-gray-500">{artistOpacity}%</span>
+                    </label>
+                    <input 
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={artistOpacity}
+                      onChange={e=>setArtistOpacity(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+          )}
 
-            <div>
-              <h4 className="font-semibold mb-3">Artist Effects</h4>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="flex justify-between text-sm mb-1">
-                    <span>Stroke</span>
-                    <span className="text-gray-500">{artistStroke}px</span>
-                  </label>
-                  <input 
-                    type="range"
-                    min="0"
-                    max="20"
-                    value={artistStroke}
-                    onChange={e=>setArtistStroke(Number(e.target.value))}
-                    className="w-full accent-purple-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="flex justify-between text-sm mb-1">
-                    <span>Shadow</span>
-                    <span className="text-gray-500">{artistShadow}px</span>
-                  </label>
-                  <input 
-                    type="range"
-                    min="0"
-                    max="30"
-                    value={artistShadow}
-                    onChange={e=>setArtistShadow(Number(e.target.value))}
-                    className="w-full accent-purple-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="flex justify-between text-sm mb-1">
-                    <span>Opacity</span>
-                    <span className="text-gray-500">{artistOpacity}%</span>
-                  </label>
-                  <input 
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={artistOpacity}
-                    onChange={e=>setArtistOpacity(Number(e.target.value))}
-                    className="w-full accent-purple-600"
-                  />
-                </div>
+          {activePanel === 'filters' && (
+            <div className="space-y-4">
+              <div>
+                <label className="flex justify-between text-sm mb-1">
+                  <span>Brightness</span>
+                  <span className="text-gray-500">{brightness}%</span>
+                </label>
+                <input 
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={brightness}
+                  onChange={e=>setBrightness(Number(e.target.value))}
+                  className="w-full accent-purple-600"
+                />
               </div>
+
+              <div>
+                <label className="flex justify-between text-sm mb-1">
+                  <span>Contrast</span>
+                  <span className="text-gray-500">{contrast}%</span>
+                </label>
+                <input 
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={contrast}
+                  onChange={e=>setContrast(Number(e.target.value))}
+                  className="w-full accent-purple-600"
+                />
+              </div>
+
+              <div>
+                <label className="flex justify-between text-sm mb-1">
+                  <span>Saturation</span>
+                  <span className="text-gray-500">{saturation}%</span>
+                </label>
+                <input 
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={saturation}
+                  onChange={e=>setSaturation(Number(e.target.value))}
+                  className="w-full accent-purple-600"
+                />
+              </div>
+
+              <div>
+                <label className="flex justify-between text-sm mb-1">
+                  <span>Blur</span>
+                  <span className="text-gray-500">{blur}px</span>
+                </label>
+                <input 
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={blur}
+                  onChange={e=>setBlur(Number(e.target.value))}
+                  className="w-full accent-purple-600"
+                />
+              </div>
+
+              <button 
+                className="w-full px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium transition-colors"
+                onClick={()=>{
+                  setBrightness(100);
+                  setContrast(100);
+                  setSaturation(100);
+                  setBlur(0);
+                }}
+              >
+                Reset Filters
+              </button>
             </div>
-          </div>
-        )}
-
-        {activePanel === 'filters' && (
-          <div className="space-y-4">
-            <div>
-              <label className="flex justify-between text-sm mb-1">
-                <span>Brightness</span>
-                <span className="text-gray-500">{brightness}%</span>
-              </label>
-              <input 
-                type="range"
-                min="0"
-                max="200"
-                value={brightness}
-                onChange={e=>setBrightness(Number(e.target.value))}
-                className="w-full accent-purple-600"
-              />
-            </div>
-
-            <div>
-              <label className="flex justify-between text-sm mb-1">
-                <span>Contrast</span>
-                <span className="text-gray-500">{contrast}%</span>
-              </label>
-              <input 
-                type="range"
-                min="0"
-                max="200"
-                value={contrast}
-                onChange={e=>setContrast(Number(e.target.value))}
-                className="w-full accent-purple-600"
-              />
-            </div>
-
-            <div>
-              <label className="flex justify-between text-sm mb-1">
-                <span>Saturation</span>
-                <span className="text-gray-500">{saturation}%</span>
-              </label>
-              <input 
-                type="range"
-                min="0"
-                max="200"
-                value={saturation}
-                onChange={e=>setSaturation(Number(e.target.value))}
-                className="w-full accent-purple-600"
-              />
-            </div>
-
-            <div>
-              <label className="flex justify-between text-sm mb-1">
-                <span>Blur</span>
-                <span className="text-gray-500">{blur}px</span>
-              </label>
-              <input 
-                type="range"
-                min="0"
-                max="10"
-                value={blur}
-                onChange={e=>setBlur(Number(e.target.value))}
-                className="w-full accent-purple-600"
-              />
-            </div>
-
-            <button 
-              className="w-full px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium transition-colors"
-              onClick={()=>{
-                setBrightness(100);
-                setContrast(100);
-                setSaturation(100);
-                setBlur(0);
-              }}
-            >
-              Reset Filters
-            </button>
-          </div>
-        )}
-
+          )}
         </div>
 
         <div className="mt-auto pt-6 border-t border-gray-200">
