@@ -74,7 +74,7 @@ function FontPicker({ value, onChange }) {
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 mt-2 max-h-80 bg-white border border-gray-300 rounded-xl shadow-2xl overflow-auto z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute left-0 right-0 mt-2 max-h-80 bg-white border border-gray-300 rounded-xl shadow-2xl overflow-auto z-50">
           {FONTS.map(f => (
             <button
               key={f.css}
@@ -107,6 +107,44 @@ export default function Home(){
   const [selected,setSelected] = useState(null);
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  
+  const [userStatus, setUserStatus] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [usageLoading, setUsageLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserStatus();
+  }, []);
+
+  async function fetchUserStatus() {
+    try {
+      setUsageLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+                    const mockStatus = {
+        user_id: 123,
+        subscription: {
+          product_code: 'professional', // Change to 'artist' or 'label-five' to see different badges
+          name: 'Professional',
+          tier: 'Professional'
+        },
+        usage: {
+          current_month: '2025-10',
+          generations_used: 12,
+          generations_limit: 30,
+          generations_remaining: 18,
+          resets_at: '2025-11-01T00:00:00Z'
+        },
+        can_generate: true
+      };
+      
+      setUserStatus(mockStatus);
+    } catch (error) {
+      console.error('Failed to fetch user status:', error);
+    } finally {
+      setUsageLoading(false);
+    }
+  }
 
   const toggle = (value) => {
     setPicks(p => {
@@ -117,21 +155,25 @@ export default function Home(){
   };
 
   async function onGenerate(){
+    if (userStatus && userStatus.usage.generations_remaining === 0) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    const demoImages = [
+      'https://images.unsplash.com/photo-1614854262318-831574f15f1f?w=900&h=900&fit=crop',
+      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=900&h=900&fit=crop',
+      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=900&h=900&fit=crop',
+      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&h=900&fit=crop'
+    ];
+
     try {
       setIsLoading(true);
       setImages([]);
       
-      const resp = await fetch('/api/generate', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ prompt, pills: picks })
-      });
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const data = await resp.json();
-      
-      if (!resp.ok) throw new Error(data?.error || 'Generation failed');
-      
-      const generatedImages = data.images || [];
+      const generatedImages = demoImages;
       setImages(generatedImages);
       
       setHistory(prev => [{
@@ -139,6 +181,18 @@ export default function Home(){
         prompt: assembledPrompt(prompt, picks),
         images: generatedImages
       }, ...prev].slice(0, 10));
+      
+      if (userStatus) {
+        setUserStatus(prev => ({
+          ...prev,
+          usage: {
+            ...prev.usage,
+            generations_used: prev.usage.generations_used + 1,
+            generations_remaining: prev.usage.generations_remaining - 1
+          },
+          can_generate: prev.usage.generations_remaining - 1 > 0
+        }));
+      }
       
     } catch (e) {
       alert(e.message || 'Something went wrong generating images.');
@@ -151,6 +205,9 @@ export default function Home(){
     return <Editor data={selected} onClose={()=>setMode('gen')} />;
   }
 
+  const isLimitReached = userStatus && userStatus.usage.generations_remaining === 0;
+  const isRunningLow = userStatus && userStatus.usage.generations_remaining <= 3 && userStatus.usage.generations_remaining > 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <style>{`
@@ -158,39 +215,19 @@ export default function Home(){
         
         @font-face {
           font-family: 'Satoshi';
-          src: url('/assets/fonts/Satoshi-Regular.woff2') format('woff2'),
-               url('/fonts/Satoshi-Regular.woff2') format('woff2');
+          src: url('/assets/fonts/Satoshi-Regular.woff2') format('woff2');
           font-weight: 400;
-          font-style: normal;
           font-display: swap;
         }
         @font-face {
           font-family: 'Satoshi';
-          src: url('/assets/fonts/Satoshi-Medium.woff2') format('woff2'),
-               url('/fonts/Satoshi-Medium.woff2') format('woff2');
-          font-weight: 500;
-          font-style: normal;
-          font-display: swap;
-        }
-        @font-face {
-          font-family: 'Satoshi';
-          src: url('/assets/fonts/Satoshi-Bold.woff2') format('woff2'),
-               url('/fonts/Satoshi-Bold.woff2') format('woff2');
+          src: url('/assets/fonts/Satoshi-Bold.woff2') format('woff2');
           font-weight: 700;
-          font-style: normal;
-          font-display: swap;
-        }
-        @font-face {
-          font-family: 'Satoshi';
-          src: url('/assets/fonts/Satoshi-Black.woff2') format('woff2'),
-               url('/fonts/Satoshi-Black.woff2') format('woff2');
-          font-weight: 900;
-          font-style: normal;
           font-display: swap;
         }
         
         body {
-          font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: 'Satoshi', 'DM Sans', sans-serif;
         }
         
         @keyframes spin {
@@ -209,6 +246,59 @@ export default function Home(){
           <h1 className="text-4xl sm:text-6xl font-bold text-black text-center" style={{fontFamily: 'Satoshi', fontWeight: 700}}>
             Artwork Generator
           </h1>
+          
+          {userStatus && !usageLoading && (
+            <div className="flex flex-col items-center gap-3 w-full max-w-md">
+              <div className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {userStatus.usage.generations_remaining} / {userStatus.usage.generations_limit} generations left
+                  </span>
+                  <span 
+                    className="px-3 py-1 text-xs font-bold rounded uppercase"
+                    style={{
+                      fontFamily: 'Poppins',
+                      fontWeight: 700,
+                      letterSpacing: '-0.4px',
+                      color: '#000000',
+                      backgroundColor: 
+                        userStatus.subscription.product_code === 'artist' ? '#aa00ff' :
+                        userStatus.subscription.product_code === 'professional' ? '#00ff99' :
+                        userStatus.subscription.product_code.includes('label') ? '#F6C443' :
+                        '#aa00ff'
+                    }}
+                  >
+                    {userStatus.subscription.product_code === 'artist' ? 'STARTER' :
+                     userStatus.subscription.product_code === 'professional' ? 'PRO' :
+                     userStatus.subscription.product_code.includes('label') && userStatus.subscription.product_code !== 'label-unlimited' ? 'LABELS' :
+                     userStatus.subscription.product_code === 'label-unlimited' ? 'DITTO PLUS' :
+                     userStatus.subscription.name.toUpperCase()}
+                  </span>
+                </div>
+                
+                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-500 ${
+                      isLimitReached ? 'bg-red-500' : 
+                      isRunningLow ? 'bg-orange-500' : 
+                      'bg-gradient-to-r from-purple-600 to-blue-600'
+                    }`}
+                    style={{ 
+                      width: `${(userStatus.usage.generations_remaining / userStatus.usage.generations_limit) * 100}%` 
+                    }}
+                  />
+                </div>
+                
+                {isRunningLow && (
+                  <div className="text-xs text-orange-600 mt-2 flex items-center gap-1">
+                    <span>⚠️</span>
+                    <span>Running low! Resets {new Date(userStatus.usage.resets_at).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           {history.length > 0 && (
             <button 
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -232,17 +322,46 @@ export default function Home(){
               placeholder="Describe the vibe..."
               value={prompt}
               onChange={e=>setPrompt(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && onGenerate()}
+              onKeyDown={e => e.key === 'Enter' && !isLimitReached && onGenerate()}
             />
             <button 
-              className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 sm:whitespace-nowrap"
+              className="px-6 sm:px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed sm:whitespace-nowrap"
               style={{fontFamily: 'Poppins'}}
               onClick={onGenerate}
-              disabled={isLoading}
+              disabled={isLoading || isLimitReached}
             >
               {isLoading ? 'Generating...' : 'Generate'}
             </button>
           </div>
+          
+          {isLimitReached && (
+            <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🚫</span>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-orange-900 mb-1">Monthly Limit Reached</h3>
+                  <p className="text-sm text-orange-700 mb-3">
+                    You've used all <strong>{userStatus.usage.generations_limit} generations</strong> for this month.
+                  </p>
+                  <div className="flex gap-2">
+                    <button 
+                      className="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+                      style={{fontFamily: 'Satoshi'}}
+                      onClick={() => setShowUpgradeModal(true)}
+                    >
+                      See Upgrade Options
+                    </button>
+                    <div className="px-3 py-2 bg-white/80 text-xs text-gray-600 rounded-lg flex items-center gap-1.5">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Resets {new Date(userStatus.usage.resets_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 mb-4">
@@ -361,6 +480,48 @@ export default function Home(){
           </section>
         )}
       </main>
+
+      {showUpgradeModal && userStatus && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowUpgradeModal(false)}>
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="text-6xl mb-4">🚀</div>
+              <h2 className="text-2xl font-bold mb-2" style={{fontFamily: 'Satoshi'}}>Upgrade for More Generations</h2>
+              <p className="text-gray-600 mb-6">
+                You've reached your limit. Unlock more creativity!
+              </p>
+              
+              <div className="space-y-3 mb-6">
+                <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl text-left">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="font-bold text-purple-900 text-lg">Professional</div>
+                    <span className="px-2.5 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">6X MORE</span>
+                  </div>
+                  <div className="text-3xl font-bold text-purple-600 mb-1">30 <span className="text-base font-normal text-gray-600">generations/month</span></div>
+                  <div className="text-sm text-purple-700 font-medium">Perfect for active creators</div>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                  style={{fontFamily: 'Satoshi'}}
+                  onClick={() => setShowUpgradeModal(false)}
+                >
+                  Maybe Later
+                </button>
+                <button
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all"
+                  style={{fontFamily: 'Satoshi'}}
+                  onClick={() => setShowUpgradeModal(false)}
+                >
+                  Upgrade Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -402,16 +563,6 @@ function Editor({ data, onClose }){
     const i = new Image();
     i.crossOrigin = "anonymous";
     i.onload = ()=> setImg(i);
-    i.onerror = () => {
-      fetch(`/api/proxy-image?url=${encodeURIComponent(data.src)}`)
-        .then(resp => resp.json())
-        .then(json => {
-          if (json.dataUrl) {
-            i.src = json.dataUrl;
-          }
-        })
-        .catch(e => console.error('Failed to load image:', e));
-    };
     i.src = data.src;
   },[data.src]);
 
@@ -478,98 +629,80 @@ function Editor({ data, onClose }){
   useEffect(()=>{
     if(!canvasRef.current || !img) return;
     
-    const drawCanvas = async () => {
-      try {
-        await document.fonts.load(`700 ${titleSize}px "${font}"`);
-        await document.fonts.load(`600 ${artistSize}px "${font}"`);
-      } catch (e) {
-        console.warn('Font loading failed, using fallback:', e);
-      }
-      
-      const ctx = canvasRef.current.getContext('2d');
-      
-      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur}px)`;
-      ctx.clearRect(0,0,W,H);
-      ctx.drawImage(img,0,0,W,H);
-      ctx.filter = 'none';
-
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = 'center';
-
-      if (title) {
-        const tx = titlePos.x * W;
-        const ty = titlePos.y * H;
-        
-        ctx.globalAlpha = titleOpacity / 100;
-        
-        if (titleShadow > 0) {
-          ctx.shadowColor = 'rgba(0,0,0,0.8)';
-          ctx.shadowBlur = titleShadow;
-          ctx.shadowOffsetX = titleShadow / 2;
-          ctx.shadowOffsetY = titleShadow / 2;
-        }
-        
-        if (titleStroke > 0) {
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = titleStroke;
-          ctx.font = `700 ${titleSize}px "${font}", sans-serif`;
-          ctx.strokeText(title, tx, ty);
-        }
-        
-        ctx.fillStyle = titleColor;
-        ctx.font = `700 ${titleSize}px "${font}", sans-serif`;
-        ctx.fillText(title, tx, ty);
-        
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
-      }
-
-      if (artist) {
-        const ax = artistPos.x * W;
-        const ay = artistPos.y * H;
-        
-        ctx.globalAlpha = artistOpacity / 100;
-        
-        if (artistShadow > 0) {
-          ctx.shadowColor = 'rgba(0,0,0,0.8)';
-          ctx.shadowBlur = artistShadow;
-          ctx.shadowOffsetX = artistShadow / 2;
-          ctx.shadowOffsetY = artistShadow / 2;
-        }
-        
-        if (artistStroke > 0) {
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = artistStroke;
-          ctx.font = `600 ${artistSize}px "${font}", sans-serif`;
-          ctx.strokeText(artist, ax, ay);
-        }
-        
-        ctx.fillStyle = artistColor;
-        ctx.font = `600 ${artistSize}px "${font}", sans-serif`;
-        ctx.fillText(artist, ax, ay);
-        
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
-      }
-    };
+    const ctx = canvasRef.current.getContext('2d');
     
-    drawCanvas();
+    ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur}px)`;
+    ctx.clearRect(0,0,W,H);
+    ctx.drawImage(img,0,0,W,H);
+    ctx.filter = 'none';
+
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    if (title) {
+      const tx = titlePos.x * W;
+      const ty = titlePos.y * H;
+      
+      ctx.globalAlpha = titleOpacity / 100;
+      
+      if (titleShadow > 0) {
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = titleShadow;
+        ctx.shadowOffsetX = titleShadow / 2;
+        ctx.shadowOffsetY = titleShadow / 2;
+      }
+      
+      if (titleStroke > 0) {
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = titleStroke;
+        ctx.font = `700 ${titleSize}px "${font}", sans-serif`;
+        ctx.strokeText(title, tx, ty);
+      }
+      
+      ctx.fillStyle = titleColor;
+      ctx.font = `700 ${titleSize}px "${font}", sans-serif`;
+      ctx.fillText(title, tx, ty);
+      
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+    }
+
+    if (artist) {
+      const ax = artistPos.x * W;
+      const ay = artistPos.y * H;
+      
+      ctx.globalAlpha = artistOpacity / 100;
+      
+      if (artistShadow > 0) {
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = artistShadow;
+        ctx.shadowOffsetX = artistShadow / 2;
+        ctx.shadowOffsetY = artistShadow / 2;
+      }
+      
+      if (artistStroke > 0) {
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = artistStroke;
+        ctx.font = `600 ${artistSize}px "${font}", sans-serif`;
+        ctx.strokeText(artist, ax, ay);
+      }
+      
+      ctx.fillStyle = artistColor;
+      ctx.font = `600 ${artistSize}px "${font}", sans-serif`;
+      ctx.fillText(artist, ax, ay);
+      
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+    }
   },[img, title, artist, font, titleSize, artistSize, titleColor, artistColor, titlePos, artistPos, titleStroke, titleShadow, titleOpacity, artistStroke, artistShadow, artistOpacity, brightness, contrast, saturation, blur]);
 
-  async function downloadPNG(){
+  function downloadPNG(){
     const OUT = 3000;
     const out = document.createElement('canvas');
     out.width = OUT; out.height = OUT;
     const ctx = out.getContext('2d');
-
-    try {
-      await document.fonts.load(`700 ${titleSize * (OUT/W)}px "${font}"`);
-      await document.fonts.load(`600 ${artistSize * (OUT/W)}px "${font}"`);
-    } catch (e) {
-      console.warn('Font loading failed for export:', e);
-    }
 
     const scale = OUT / W;
     ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur * scale}px)`;
